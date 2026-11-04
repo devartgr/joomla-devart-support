@@ -19,6 +19,8 @@ section.
 - Stay on `1.0.0` for further pre-public changes until the first public release is declared.
 - Old disposable ZIPs moved under `archive/`.
 - Pre-public hardening: remove stale SQL update scripts; add messages/attachments indexes; normalise legacy statuses; narrow portal field updates; MIME tighten (octet-stream only for RAR); batched attachment purge; migrate storage only on install/update; portal create/reply rate limits; `createQuery()`; dead-code cleanup; Cloudflare/versioning ops docs.
+- Author-copy email applies only to portal user replies (not administrator staff replies).
+- Installer preflight purges leftover internal SQL update scripts so numbering-reset sites do not re-run `ALTER ADD` (e.g. duplicate `category_id`).
 
 ## Development history (superseded numbering)
 

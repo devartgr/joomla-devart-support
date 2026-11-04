@@ -53,7 +53,7 @@ Confirmed from repository source only:
 - DevArt header banners on submenu pages, footer and red active submenu (parent link keeps Atum contrast)
 - Bulk status updates without N+1 ticket loads; list indexes for category/status filters
 - Ticket threads load in pages (100, expandable to 1000) with Load older messages
-- Optional author-copy email of the poster’s own reply
+- Optional author-copy email of a portal user’s own reply (not staff admin replies)
 - Tools attachment storage health without exposing absolute paths
 - Joomla Privacy plugin export/remove for tickets, messages and attachments (`user_id` / `requester_email`)
 - Action Log plugin for ticket and attachment mutations (admin + portal)

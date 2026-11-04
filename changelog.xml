@@ -14,6 +14,8 @@
         </addition>
         <change>
             <item>Pre-public hardening: schema update cleanup, indexes, portal concurrency-safe writes, MIME and purge limits, rate limits, createQuery</item>
+            <item>Author-copy email is portal-only (staff admin replies no longer receive a personal copy)</item>
+            <item>Installer preflight purges leftover internal SQL updates after the 1.0.0 numbering reset</item>
         </change>
         <note>
             <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>

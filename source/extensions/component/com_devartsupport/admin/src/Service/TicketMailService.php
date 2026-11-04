@@ -186,7 +186,8 @@ final class TicketMailService
     }
 
     /**
-     * Send the message author a copy of what they posted on the ticket.
+     * Send a portal user a copy of the reply they just posted.
+     * Staff replies from the administrator never use this path.
      */
     public function notifyAuthorCopy(object $ticket, string $messageBody, string $authorEmail): void
     {

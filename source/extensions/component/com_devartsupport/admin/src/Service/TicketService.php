@@ -372,7 +372,13 @@ final class TicketService
 
         if ($updated !== null) {
             $this->mail->notifyReply($updated, $reply);
-            $this->mail->notifyAuthorCopy($updated, $reply, (string) ($updated->requester_email ?? ''));
+            $authorEmail = $this->resolveUserEmail($ownerUserId);
+
+            if ($authorEmail === '') {
+                $authorEmail = strtolower(trim((string) ($updated->requester_email ?? '')));
+            }
+
+            $this->mail->notifyAuthorCopy($updated, $reply, $authorEmail);
 
             if ($status !== (string) $existing->status) {
                 $this->mail->notifyStatusChange($updated, (string) $existing->status, $status);
@@ -525,8 +531,6 @@ final class TicketService
             if ($reply !== '') {
                 $this->mail->notifyReply($updated, $reply);
                 $this->mail->notifyRequesterReply($updated);
-                $authorEmail = $this->resolveUserEmail($staffUserId);
-                $this->mail->notifyAuthorCopy($updated, $reply, $authorEmail);
                 TicketActionLog::log('replied', $id, (string) $updated->subject, ['channel' => 'admin']);
             }
 

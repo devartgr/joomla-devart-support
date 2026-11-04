@@ -20,6 +20,24 @@ use Joomla\Database\ParameterType;
 
 class Com_DevartsupportInstallerScript
 {
+    /**
+     * Joomla reads schema updates from the already-installed path after file
+     * copy. Leftover internal 1.0.x scripts must be removed in preflight so
+     * parseSchemaUpdates cannot re-run ALTER ADD against a numbering-reset site.
+     */
+    public function preflight(string $type, InstallerAdapter $parent): bool
+    {
+        unset($parent);
+
+        if ($type === 'uninstall') {
+            return true;
+        }
+
+        $this->purgeObsoleteUpdateSqlFiles();
+
+        return true;
+    }
+
     public function postflight(string $type, InstallerAdapter $parent): bool
     {
         if ($type === 'uninstall') {
@@ -43,8 +61,8 @@ class Com_DevartsupportInstallerScript
     }
 
     /**
-     * After the numbering reset, remove leftover internal update scripts that
-     * Joomla would otherwise re-run on the next schema bump.
+     * Remove leftover update scripts from the installed component tree.
+     * Schema changes after the numbering reset are applied idempotently in postflight.
      */
     private function purgeObsoleteUpdateSqlFiles(): void
     {
@@ -270,56 +288,64 @@ class Com_DevartsupportInstallerScript
 
     private function ensureCategoryColumns(object $db): void
     {
-        $columns = $db->getTableColumns('#__devartsupport_categories') ?: [];
+        try {
+            $columns = $db->getTableColumns('#__devartsupport_categories') ?: [];
 
-        if (isset($columns['attachments_enabled'])) {
-            return;
+            if (isset($columns['attachments_enabled'])) {
+                return;
+            }
+
+            $db->setQuery(
+                'ALTER TABLE ' . $db->quoteName('#__devartsupport_categories')
+                . ' ADD COLUMN ' . $db->quoteName('attachments_enabled')
+                . ' tinyint unsigned NOT NULL DEFAULT 1 AFTER ' . $db->quoteName('published')
+            )->execute();
+        } catch (\Throwable) {
+            // Column may already exist on numbering-reset upgrades.
         }
-
-        $db->setQuery(
-            'ALTER TABLE ' . $db->quoteName('#__devartsupport_categories')
-            . ' ADD COLUMN ' . $db->quoteName('attachments_enabled')
-            . ' tinyint unsigned NOT NULL DEFAULT 1 AFTER ' . $db->quoteName('published')
-        )->execute();
     }
 
     private function ensureTicketColumns(object $db): void
     {
-        $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+        try {
+            $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
 
-        if (!isset($columns['category_id'])) {
-            $db->setQuery(
-                'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
-                . ' ADD COLUMN ' . $db->quoteName('category_id')
-                . ' int unsigned NOT NULL DEFAULT 0 AFTER ' . $db->quoteName('status')
-            )->execute();
+            if (!isset($columns['category_id'])) {
+                $db->setQuery(
+                    'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+                    . ' ADD COLUMN ' . $db->quoteName('category_id')
+                    . ' int unsigned NOT NULL DEFAULT 0 AFTER ' . $db->quoteName('status')
+                )->execute();
+            }
+
+            $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+
+            if (!isset($columns['priority'])) {
+                $db->setQuery(
+                    'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+                    . ' ADD COLUMN ' . $db->quoteName('priority')
+                    . ' varchar(16) NOT NULL DEFAULT \'normal\' AFTER ' . $db->quoteName('category_id')
+                )->execute();
+            }
+
+            $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+
+            if (!isset($columns['published'])) {
+                $after = isset($columns['status']) ? 'status' : 'subject';
+                $db->setQuery(
+                    'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+                    . ' ADD COLUMN ' . $db->quoteName('published')
+                    . ' tinyint NOT NULL DEFAULT 1 AFTER ' . $db->quoteName($after)
+                )->execute();
+            }
+
+            $this->ensureTicketIndex($db, 'idx_category_id', 'category_id');
+            $this->ensureTicketIndex($db, 'idx_priority', 'priority');
+            $this->ensureTicketIndex($db, 'idx_published', 'published');
+            $this->migrateLegacyPendingStatus($db);
+        } catch (\Throwable) {
+            // Column/index may already exist on numbering-reset upgrades.
         }
-
-        $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
-
-        if (!isset($columns['priority'])) {
-            $db->setQuery(
-                'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
-                . ' ADD COLUMN ' . $db->quoteName('priority')
-                . ' varchar(16) NOT NULL DEFAULT \'normal\' AFTER ' . $db->quoteName('category_id')
-            )->execute();
-        }
-
-        $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
-
-        if (!isset($columns['published'])) {
-            $after = isset($columns['status']) ? 'status' : 'subject';
-            $db->setQuery(
-                'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
-                . ' ADD COLUMN ' . $db->quoteName('published')
-                . ' tinyint NOT NULL DEFAULT 1 AFTER ' . $db->quoteName($after)
-            )->execute();
-        }
-
-        $this->ensureTicketIndex($db, 'idx_category_id', 'category_id');
-        $this->ensureTicketIndex($db, 'idx_priority', 'priority');
-        $this->ensureTicketIndex($db, 'idx_published', 'published');
-        $this->migrateLegacyPendingStatus($db);
     }
 
     /**

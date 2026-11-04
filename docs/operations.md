@@ -5,6 +5,7 @@
 - Public-facing package version is `1.0.0`.
 - Internal builds formerly numbered `1.0.1`–`1.0.46` were development-only.
 - Sites that still show those internal versions must install the current ZIP manually; Joomla’s update server will not offer a lower version number as an upgrade.
+- The installer preflight deletes leftover `administrator/components/com_devartsupport/sql/updates/mysql/*.sql` files before schema updates run, so old `ALTER ADD` scripts cannot fire against an already-migrated database.
 - Stay on `1.0.0` until the first public release is explicitly declared. Rebuilds of the same version move the previous `builds/` ZIP into `archive/` first.
 
 ## Cloudflare / Full Page Cache
