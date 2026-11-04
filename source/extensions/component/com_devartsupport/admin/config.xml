@@ -118,6 +118,39 @@
         />
     </fieldset>
     <fieldset
+        name="mail_queue"
+        label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE"
+    >
+        <field
+            name="mail_queue_batch"
+            type="number"
+            default="20"
+            min="1"
+            max="100"
+            step="1"
+            filter="integer"
+            label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_BATCH"
+            description="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_BATCH_DESC"
+        />
+        <field
+            name="mail_queue_max_attempts"
+            type="number"
+            default="5"
+            min="1"
+            max="10"
+            step="1"
+            filter="integer"
+            label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_ATTEMPTS"
+            description="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_ATTEMPTS_DESC"
+        />
+        <field
+            name="mail_queue_note"
+            type="note"
+            label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_NOTE"
+            description="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_NOTE_DESC"
+        />
+    </fieldset>
+    <fieldset
         name="frontend"
         label="COM_DEVARTSUPPORT_CONFIG_FRONTEND"
     >

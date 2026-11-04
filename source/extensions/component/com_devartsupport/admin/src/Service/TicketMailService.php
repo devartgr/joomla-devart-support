@@ -14,6 +14,7 @@ namespace Devart\Component\Devartsupport\Administrator\Service;
 defined('_JEXEC') or die;
 
 use Devart\Component\Devartsupport\Administrator\Helper\EmailSettings;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
 use Devart\Component\Devartsupport\Site\Helper\PortalRoute;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
@@ -22,11 +23,15 @@ use Joomla\CMS\Mail\MailHelper;
 use Joomla\CMS\User\UserFactoryInterface;
 
 /**
- * Staff notification emails for ticket events.
+ * Ticket notification emails. Notifications are queued; test mail sends immediately.
  * Failures never abort ticket create/update/status changes.
  */
 final class TicketMailService
 {
+    public function __construct(private readonly MailQueueStorage $queue)
+    {
+    }
+
     public function notifyNewTicket(object $ticket, string $messageBody): void
     {
         if (!EmailSettings::notifyNewTicket()) {
@@ -45,7 +50,9 @@ final class TicketMailService
                 (string) $ticket->requester_name,
                 (string) $ticket->requester_email,
                 $this->plainBody($messageBody)
-            )
+            ),
+            (int) $ticket->id,
+            'new_ticket'
         );
     }
 
@@ -65,7 +72,9 @@ final class TicketMailService
                 (string) $ticket->subject,
                 (string) $ticket->status,
                 $this->plainBody($replyBody)
-            )
+            ),
+            (int) $ticket->id,
+            'staff_reply'
         );
     }
 
@@ -84,7 +93,9 @@ final class TicketMailService
                 (string) $ticket->subject,
                 $previousStatus,
                 $newStatus
-            )
+            ),
+            (int) $ticket->id,
+            'status'
         );
     }
 
@@ -112,7 +123,8 @@ final class TicketMailService
                 (int) $ticket->id,
                 (string) $ticket->subject,
                 $portalUrl
-            )
+            ),
+            'requester'
         );
     }
 
@@ -143,11 +155,12 @@ final class TicketMailService
                 $previousStatus,
                 $newStatus,
                 $portalUrl
-            )
+            ),
+            'requester_status'
         );
     }
 
-    private function dispatchRequester(object $ticket, string $subject, string $body): void
+    private function dispatchRequester(object $ticket, string $subject, string $body, string $kind): void
     {
         $to = $this->resolveRequesterAddress($ticket);
 
@@ -155,11 +168,7 @@ final class TicketMailService
             return;
         }
 
-        try {
-            $this->dispatch([$to], [], $subject, $body);
-        } catch (\Throwable $error) {
-            $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
-        }
+        $this->enqueue([$to], [], $subject, $body, (int) ($ticket->id ?? 0), $kind);
     }
 
     /**
@@ -204,26 +213,24 @@ final class TicketMailService
         $this->ensureLanguage();
         $portalUrl = PortalRoute::absoluteTicket((int) $ticket->id);
 
-        try {
-            $this->dispatch(
-                [$to],
-                [],
-                Text::sprintf(
-                    'COM_DEVARTSUPPORT_MAIL_AUTHOR_COPY_SUBJECT',
-                    (int) $ticket->id,
-                    (string) $ticket->subject
-                ),
-                $this->mailText(
-                    'COM_DEVARTSUPPORT_MAIL_AUTHOR_COPY_BODY',
-                    (int) $ticket->id,
-                    (string) $ticket->subject,
-                    $this->plainBody($messageBody),
-                    $portalUrl
-                )
-            );
-        } catch (\Throwable $error) {
-            $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
-        }
+        $this->enqueue(
+            [$to],
+            [],
+            Text::sprintf(
+                'COM_DEVARTSUPPORT_MAIL_AUTHOR_COPY_SUBJECT',
+                (int) $ticket->id,
+                (string) $ticket->subject
+            ),
+            $this->mailText(
+                'COM_DEVARTSUPPORT_MAIL_AUTHOR_COPY_BODY',
+                (int) $ticket->id,
+                (string) $ticket->subject,
+                $this->plainBody($messageBody),
+                $portalUrl
+            ),
+            (int) $ticket->id,
+            'author_copy'
+        );
     }
 
     public function sendTest(string $to): void
@@ -239,7 +246,7 @@ final class TicketMailService
         }
 
         $this->ensureLanguage();
-        $this->dispatch(
+        $this->sendNow(
             [$to],
             [],
             Text::_('COM_DEVARTSUPPORT_MAIL_TEST_SUBJECT'),
@@ -247,36 +254,20 @@ final class TicketMailService
         );
     }
 
-    private function mailText(string $key, mixed ...$args): string
-    {
-        return str_replace('\\n', "\n", Text::sprintf($key, ...$args));
-    }
-
-    private function sendStaff(string $subject, string $body): void
-    {
-        $recipients = EmailSettings::recipients();
-
-        if ($recipients === []) {
-            $this->warn(Text::_('COM_DEVARTSUPPORT_MAIL_NO_RECIPIENTS'));
-
-            return;
-        }
-
-        try {
-            $this->dispatch($recipients, EmailSettings::bcc(), $subject, $body);
-        } catch (\Throwable $error) {
-            $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
-        }
-    }
-
     /**
+     * Immediate SMTP send used by test mail and the queue worker.
+     *
      * @param list<string> $recipients
      * @param list<string> $bcc
      */
-    private function dispatch(array $recipients, array $bcc, string $subject, string $body): void
+    public function sendNow(array $recipients, array $bcc, string $subject, string $body): void
     {
         if (!Factory::getApplication()->get('mailonline', 1)) {
             throw new \RuntimeException(Text::_('COM_DEVARTSUPPORT_MAIL_SITE_OFFLINE'));
+        }
+
+        if (!EmailSettings::enabled()) {
+            throw new \RuntimeException(Text::_('COM_DEVARTSUPPORT_MAIL_TEST_DISABLED'));
         }
 
         $mailer = Factory::getContainer()
@@ -313,6 +304,47 @@ final class TicketMailService
         $mailer->setSubject($this->oneLine($subject));
         $mailer->setBody($body);
         $mailer->send();
+    }
+
+    private function mailText(string $key, mixed ...$args): string
+    {
+        return str_replace('\\n', "\n", Text::sprintf($key, ...$args));
+    }
+
+    private function sendStaff(string $subject, string $body, int $ticketId, string $kind): void
+    {
+        $recipients = EmailSettings::recipients();
+
+        if ($recipients === []) {
+            $this->warn(Text::_('COM_DEVARTSUPPORT_MAIL_NO_RECIPIENTS'));
+
+            return;
+        }
+
+        $this->enqueue($recipients, EmailSettings::bcc(), $subject, $body, $ticketId, $kind);
+    }
+
+    /**
+     * @param list<string> $recipients
+     * @param list<string> $bcc
+     */
+    private function enqueue(
+        array $recipients,
+        array $bcc,
+        string $subject,
+        string $body,
+        int $ticketId,
+        string $kind
+    ): void {
+        if (!EmailSettings::enabled()) {
+            return;
+        }
+
+        try {
+            $this->queue->enqueue($recipients, $bcc, $subject, $body, $ticketId, $kind);
+        } catch (\Throwable $error) {
+            $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
+        }
     }
 
     private function warn(string $message): void

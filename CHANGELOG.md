@@ -26,6 +26,7 @@ section.
 - Portal reply reopen uses SQL `IF(status=closed)` so concurrent staff status changes are not overwritten.
 - Admin ticket save rejects stale forms via `expected_modified`.
 - Configurable portal rate limits in Options (create/reply hourly caps).
+- Outbound mail queue: ticket notifications enqueue to `#__devartsupport_mail_queue` and send via Scheduler `devartsupport.send_mail` (test mail remains immediate).
 
 ## Development history (superseded numbering)
 

@@ -61,3 +61,23 @@ CREATE TABLE IF NOT EXISTS `#__devartsupport_attachments` (
   KEY `idx_created` (`created`),
   KEY `idx_created_by` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `#__devartsupport_mail_queue` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `ticket_id` int unsigned NOT NULL DEFAULT 0,
+  `mail_kind` varchar(32) NOT NULL DEFAULT '',
+  `recipients_json` text NOT NULL,
+  `bcc_json` text NOT NULL,
+  `subject` varchar(255) NOT NULL DEFAULT '',
+  `body` mediumtext NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `attempts` tinyint unsigned NOT NULL DEFAULT 0,
+  `max_attempts` tinyint unsigned NOT NULL DEFAULT 5,
+  `last_error` varchar(512) NOT NULL DEFAULT '',
+  `created` datetime NOT NULL,
+  `available_at` datetime NOT NULL,
+  `sent_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_status_available` (`status`,`available_at`,`id`),
+  KEY `idx_ticket_id` (`ticket_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;

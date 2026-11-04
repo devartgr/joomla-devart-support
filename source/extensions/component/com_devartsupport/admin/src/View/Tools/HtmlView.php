@@ -15,9 +15,12 @@ defined('_JEXEC') or die;
 
 use Devart\Component\Devartsupport\Administrator\Helper\AdminAssets;
 use Devart\Component\Devartsupport\Administrator\Helper\PrivateAttachmentPath;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\Database\DatabaseInterface;
 
 class HtmlView extends BaseHtmlView
 {
@@ -27,6 +30,8 @@ class HtmlView extends BaseHtmlView
         'writable'        => false,
         'outside_webroot' => false,
     ];
+
+    public int $mailQueuePending = 0;
 
     public function display($tpl = null): void
     {
@@ -41,6 +46,13 @@ class HtmlView extends BaseHtmlView
         }
 
         $this->storageHealth = PrivateAttachmentPath::health();
+
+        try {
+            $db = Factory::getContainer()->get(DatabaseInterface::class);
+            $this->mailQueuePending = (new MailQueueStorage($db))->countPending();
+        } catch (\Throwable) {
+            $this->mailQueuePending = 0;
+        }
 
         AdminAssets::load();
         parent::display($tpl);

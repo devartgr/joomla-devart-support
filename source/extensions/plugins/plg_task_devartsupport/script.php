@@ -17,25 +17,51 @@ use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\Database\DatabaseInterface;
 
 /**
- * Enable the task plugin on install and seed a daily Scheduled Task once.
+ * Enable the task plugin on install and seed Scheduled Tasks once.
  */
 final class PlgTaskDevartsupportInstallerScript
 {
-    private const ROUTINE_ID = 'devartsupport.purge_attachments';
-
-    private const TASK_TITLE = 'DevArt Support – Purge expired attachments';
+    private const SEED_VERSION = '1.0.0';
 
     private const AUTO_NOTE = 'Created automatically by DevArt Support install/update.';
 
-    private const SEED_MARKER = 'scheduler_seeded_attachment_purge';
-
-    private const SEED_VERSION = '1.0.0';
+    /**
+     * @var list<array{
+     *     routine: string,
+     *     title: string,
+     *     marker: string,
+     *     ruleType: string,
+     *     intervalKey: string,
+     *     intervalValue: string,
+     *     cronExp: string
+     * }>
+     */
+    private const TASKS = [
+        [
+            'routine'       => 'devartsupport.purge_attachments',
+            'title'         => 'DevArt Support – Purge expired attachments',
+            'marker'        => 'scheduler_seeded_attachment_purge',
+            'ruleType'      => 'interval-hours',
+            'intervalKey'   => 'interval-hours',
+            'intervalValue' => '24',
+            'cronExp'       => 'PT24H',
+        ],
+        [
+            'routine'       => 'devartsupport.send_mail',
+            'title'         => 'DevArt Support – Send queued mail',
+            'marker'        => 'scheduler_seeded_mail_queue',
+            'ruleType'      => 'interval-minutes',
+            'intervalKey'   => 'interval-minutes',
+            'intervalValue' => '5',
+            'cronExp'       => 'PT5M',
+        ],
+    ];
 
     public function install(InstallerAdapter $parent): bool
     {
         unset($parent);
         $this->publishPlugin();
-        $this->ensureScheduledTask();
+        $this->ensureScheduledTasks();
 
         return true;
     }
@@ -43,7 +69,7 @@ final class PlgTaskDevartsupportInstallerScript
     public function update(InstallerAdapter $parent): bool
     {
         unset($parent);
-        $this->ensureScheduledTask();
+        $this->ensureScheduledTasks();
 
         return true;
     }
@@ -56,7 +82,7 @@ final class PlgTaskDevartsupportInstallerScript
             $this->publishPlugin();
         }
 
-        $this->ensureScheduledTask();
+        $this->ensureScheduledTasks();
 
         return true;
     }
@@ -78,7 +104,7 @@ final class PlgTaskDevartsupportInstallerScript
         }
     }
 
-    private function ensureScheduledTask(): void
+    private function ensureScheduledTasks(): void
     {
         try {
             $db = Factory::getContainer()->get(DatabaseInterface::class);
@@ -87,116 +113,133 @@ final class PlgTaskDevartsupportInstallerScript
                 return;
             }
 
-            $routineId = self::ROUTINE_ID;
-            $existingId = (int) $db->setQuery(
-                $db->createQuery()
-                    ->select($db->quoteName('id'))
-                    ->from($db->quoteName('#__scheduler_tasks'))
-                    ->where($db->quoteName('type') . ' = :routineType')
-                    ->bind(':routineType', $routineId)
-                    ->setLimit(1)
-            )->loadResult();
-
-            if ($existingId > 0) {
-                $this->setSeedMarker($db);
-
-                return;
+            foreach (self::TASKS as $task) {
+                $this->ensureOneTask($db, $task);
             }
-
-            if ($this->hasSeedMarker($db)) {
-                return;
-            }
-
-            $intervalHours = 24;
-            $executionRules = json_encode([
-                'rule-type'       => 'interval-hours',
-                'interval-hours'  => (string) $intervalHours,
-                'exec-day'        => gmdate('d'),
-                'exec-time'       => '03:30',
-            ], JSON_UNESCAPED_SLASHES);
-            $cronRules = json_encode([
-                'type' => 'interval',
-                'exp'  => 'PT' . $intervalHours . 'H',
-            ], JSON_UNESCAPED_SLASHES);
-            $params = json_encode([
-                'individual_log' => false,
-                'log_file'       => '',
-                'notifications'  => [
-                    'success_mail'        => 0,
-                    'failure_mail'        => 0,
-                    'fatal_failure_mail'  => 1,
-                    'orphan_mail'         => 1,
-                ],
-            ], JSON_UNESCAPED_SLASHES);
-
-            if ($executionRules === false || $cronRules === false || $params === false) {
-                return;
-            }
-
-            $now = (new Date('now'))->toSql();
-            $insert = $db->createQuery()
-                ->insert($db->quoteName('#__scheduler_tasks'))
-                ->columns($db->quoteName([
-                    'asset_id',
-                    'title',
-                    'type',
-                    'execution_rules',
-                    'cron_rules',
-                    'state',
-                    'last_exit_code',
-                    'next_execution',
-                    'times_executed',
-                    'times_failed',
-                    'priority',
-                    'ordering',
-                    'cli_exclusive',
-                    'params',
-                    'note',
-                    'created',
-                    'created_by',
-                ]))
-                ->values(implode(', ', [
-                    '0',
-                    $db->quote(self::TASK_TITLE),
-                    $db->quote($routineId),
-                    $db->quote($executionRules),
-                    $db->quote($cronRules),
-                    '1',
-                    '0',
-                    $db->quote($now),
-                    '0',
-                    '0',
-                    '0',
-                    '0',
-                    '0',
-                    $db->quote($params),
-                    $db->quote(self::AUTO_NOTE),
-                    $db->quote($now),
-                    '0',
-                ]));
-            $db->setQuery($insert)->execute();
-            $this->setSeedMarker($db);
         } catch (\Throwable) {
             // Never block installation.
         }
     }
 
-    private function hasSeedMarker(DatabaseInterface $db): bool
+    /**
+     * @param array{
+     *     routine: string,
+     *     title: string,
+     *     marker: string,
+     *     ruleType: string,
+     *     intervalKey: string,
+     *     intervalValue: string,
+     *     cronExp: string
+     * } $task
+     */
+    private function ensureOneTask(DatabaseInterface $db, array $task): void
     {
-        $params = $this->readComponentParams($db);
+        $routineId = $task['routine'];
+        $existingId = (int) $db->setQuery(
+            $db->createQuery()
+                ->select($db->quoteName('id'))
+                ->from($db->quoteName('#__scheduler_tasks'))
+                ->where($db->quoteName('type') . ' = :routineType')
+                ->bind(':routineType', $routineId)
+                ->setLimit(1)
+        )->loadResult();
 
-        return trim((string) ($params[self::SEED_MARKER] ?? '')) !== '';
-    }
+        if ($existingId > 0) {
+            $this->setSeedMarker($db, $task['marker']);
 
-    private function setSeedMarker(DatabaseInterface $db): void
-    {
-        $params = $this->readComponentParams($db);
-
-        if (trim((string) ($params[self::SEED_MARKER] ?? '')) === self::SEED_VERSION) {
             return;
         }
 
-        $params[self::SEED_MARKER] = self::SEED_VERSION;
+        if ($this->hasSeedMarker($db, $task['marker'])) {
+            return;
+        }
+
+        $executionRules = json_encode([
+            'rule-type'         => $task['ruleType'],
+            $task['intervalKey'] => $task['intervalValue'],
+            'exec-day'          => gmdate('d'),
+            'exec-time'         => '03:30',
+        ], JSON_UNESCAPED_SLASHES);
+        $cronRules = json_encode([
+            'type' => 'interval',
+            'exp'  => $task['cronExp'],
+        ], JSON_UNESCAPED_SLASHES);
+        $params = json_encode([
+            'individual_log' => false,
+            'log_file'       => '',
+            'notifications'  => [
+                'success_mail'       => 0,
+                'failure_mail'       => 0,
+                'fatal_failure_mail' => 1,
+                'orphan_mail'        => 1,
+            ],
+        ], JSON_UNESCAPED_SLASHES);
+
+        if ($executionRules === false || $cronRules === false || $params === false) {
+            return;
+        }
+
+        $now = (new Date('now'))->toSql();
+        $insert = $db->createQuery()
+            ->insert($db->quoteName('#__scheduler_tasks'))
+            ->columns($db->quoteName([
+                'asset_id',
+                'title',
+                'type',
+                'execution_rules',
+                'cron_rules',
+                'state',
+                'last_exit_code',
+                'next_execution',
+                'times_executed',
+                'times_failed',
+                'priority',
+                'ordering',
+                'cli_exclusive',
+                'params',
+                'note',
+                'created',
+                'created_by',
+            ]))
+            ->values(implode(', ', [
+                '0',
+                $db->quote($task['title']),
+                $db->quote($routineId),
+                $db->quote($executionRules),
+                $db->quote($cronRules),
+                '1',
+                '0',
+                $db->quote($now),
+                '0',
+                '0',
+                '0',
+                '0',
+                '0',
+                $db->quote($params),
+                $db->quote(self::AUTO_NOTE),
+                $db->quote($now),
+                '0',
+            ]));
+        $db->setQuery($insert)->execute();
+        $this->setSeedMarker($db, $task['marker']);
+    }
+
+    private function hasSeedMarker(DatabaseInterface $db, string $marker): bool
+    {
+        $params = $this->readComponentParams($db);
+
+        return trim((string) ($params[$marker] ?? '')) !== '';
+    }
+
+    private function setSeedMarker(DatabaseInterface $db, string $marker): void
+    {
+        $params = $this->readComponentParams($db);
+
+        if (trim((string) ($params[$marker] ?? '')) === self::SEED_VERSION) {
+            return;
+        }
+
+        $params[$marker] = self::SEED_VERSION;
         $encoded = json_encode($params, JSON_UNESCAPED_SLASHES);
 
         if ($encoded === false) {

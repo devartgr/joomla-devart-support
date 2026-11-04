@@ -17,6 +17,7 @@
             <item>Author-copy email is portal-only (staff admin replies no longer receive a personal copy)</item>
             <item>Installer preflight purges leftover internal SQL updates after the 1.0.0 numbering reset</item>
             <item>File-first attachment purge, portal status-safe reopen, admin stale-form guard, configurable portal rate limits</item>
+            <item>Outbound mail queue with Scheduler delivery for ticket notifications</item>
         </change>
         <note>
             <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>

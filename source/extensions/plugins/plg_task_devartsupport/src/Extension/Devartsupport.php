@@ -14,7 +14,10 @@ namespace Devart\Plugin\Task\Devartsupport\Extension;
 defined('_JEXEC') or die;
 
 use Devart\Component\Devartsupport\Administrator\Helper\AttachmentSettings;
+use Devart\Component\Devartsupport\Administrator\Service\MailQueueService;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\AttachmentStorage;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
+use Devart\Component\Devartsupport\Administrator\Service\TicketMailService;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Component\Scheduler\Administrator\Event\ExecuteTaskEvent;
@@ -24,7 +27,7 @@ use Joomla\Database\DatabaseInterface;
 use Joomla\Event\SubscriberInterface;
 
 /**
- * Scheduled purge of expired private ticket attachments.
+ * Scheduled purge of expired private ticket attachments and outbound mail queue.
  */
 final class Devartsupport extends CMSPlugin implements SubscriberInterface
 {
@@ -35,6 +38,10 @@ final class Devartsupport extends CMSPlugin implements SubscriberInterface
         'devartsupport.purge_attachments' => [
             'langConstPrefix' => 'PLG_TASK_DEVARTSUPPORT_PURGE',
             'method'          => 'purgeExpiredAttachments',
+        ],
+        'devartsupport.send_mail' => [
+            'langConstPrefix' => 'PLG_TASK_DEVARTSUPPORT_SEND_MAIL',
+            'method'          => 'sendQueuedMail',
         ],
     ];
 
@@ -78,6 +85,40 @@ final class Devartsupport extends CMSPlugin implements SubscriberInterface
             return Status::OK;
         } catch (\Throwable $error) {
             $this->logTask('DevArt Support attachment purge failed: ' . $error->getMessage());
+
+            return Status::KO;
+        }
+    }
+
+    private function sendQueuedMail(ExecuteTaskEvent $event): int
+    {
+        unset($event);
+
+        if (
+            !class_exists(MailQueueStorage::class)
+            || !class_exists(TicketMailService::class)
+            || !class_exists(MailQueueService::class)
+        ) {
+            $this->logTask('DevArt Support mail queue skipped: component unavailable.');
+
+            return Status::KO;
+        }
+
+        try {
+            $db = Factory::getContainer()->get(DatabaseInterface::class);
+            $queue = new MailQueueStorage($db);
+            $mail = new TicketMailService($queue);
+            $result = (new MailQueueService($queue, $mail))->processBatch();
+            $this->logTask(sprintf(
+                'DevArt Support mail queue: sent %d, failed/retry %d, purged %d sent row(s).',
+                $result['sent'],
+                $result['failed'],
+                $result['purged']
+            ));
+
+            return Status::OK;
+        } catch (\Throwable $error) {
+            $this->logTask('DevArt Support mail queue failed: ' . $error->getMessage());
 
             return Status::KO;
         }

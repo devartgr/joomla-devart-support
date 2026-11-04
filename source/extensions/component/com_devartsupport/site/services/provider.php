@@ -14,6 +14,7 @@ defined('_JEXEC') or die;
 use Devart\Component\Devartsupport\Administrator\Service\CategoryService;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\AttachmentStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\CategoryStorage;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\MessageStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\TicketStorage;
 use Devart\Component\Devartsupport\Administrator\Service\TicketMailService;
@@ -49,8 +50,11 @@ return new class implements ServiceProviderInterface {
         $container->set(AttachmentStorage::class, static function (Container $container): AttachmentStorage {
             return new AttachmentStorage($container->get(DatabaseInterface::class));
         });
-        $container->set(TicketMailService::class, static function (): TicketMailService {
-            return new TicketMailService();
+        $container->set(MailQueueStorage::class, static function (Container $container): MailQueueStorage {
+            return new MailQueueStorage($container->get(DatabaseInterface::class));
+        });
+        $container->set(TicketMailService::class, static function (Container $container): TicketMailService {
+            return new TicketMailService($container->get(MailQueueStorage::class));
         });
         $container->set(TicketService::class, static function (Container $container): TicketService {
             return new TicketService(
@@ -58,7 +62,8 @@ return new class implements ServiceProviderInterface {
                 $container->get(MessageStorage::class),
                 $container->get(CategoryStorage::class),
                 $container->get(AttachmentStorage::class),
-                $container->get(TicketMailService::class)
+                $container->get(TicketMailService::class),
+                $container->get(MailQueueStorage::class)
             );
         });
         $container->set(CategoryService::class, static function (Container $container): CategoryService {

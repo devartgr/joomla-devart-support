@@ -20,6 +20,7 @@ use Devart\Component\Devartsupport\Administrator\Helper\PortalRateLimits;
 use Devart\Component\Devartsupport\Administrator\Helper\TicketActionLog;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\AttachmentStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\CategoryStorage;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\MessageStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\TicketStorage;
 use Joomla\CMS\Date\Date;
@@ -68,7 +69,8 @@ final class TicketService
         private readonly MessageStorage $messages,
         private readonly CategoryStorage $categories,
         private readonly AttachmentStorage $attachments,
-        private readonly TicketMailService $mail
+        private readonly TicketMailService $mail,
+        private readonly MailQueueStorage $mailQueue
     ) {
     }
 
@@ -669,6 +671,7 @@ final class TicketService
         $this->tickets->transactionStart();
 
         try {
+            $this->mailQueue->deleteForTickets($ids);
             $this->attachments->deleteForTickets($ids);
             $this->messages->deleteForTickets($ids);
             $deleted = $this->tickets->delete($ids);

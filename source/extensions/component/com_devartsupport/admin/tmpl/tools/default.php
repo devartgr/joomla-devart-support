@@ -79,6 +79,13 @@ $hubs = [
         <?php endif; ?>
     </div>
 
+    <div class="mt-4">
+        <h3><?php echo $escape(Text::_('COM_DEVARTSUPPORT_TOOLS_MAIL_QUEUE_TITLE')); ?></h3>
+        <div class="alert alert-info">
+            <?php echo $escape(Text::sprintf('COM_DEVARTSUPPORT_TOOLS_MAIL_QUEUE_PENDING', $this->mailQueuePending)); ?>
+        </div>
+    </div>
+
     <?php echo AdminChrome::footer(); ?>
 </div>
 </div>

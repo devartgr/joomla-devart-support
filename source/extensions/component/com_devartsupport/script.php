@@ -51,6 +51,7 @@ class Com_DevartsupportInstallerScript
         $this->ensureCategoryColumns($db);
         $this->ensureTicketColumns($db);
         $this->ensureAttachmentsTable($db);
+        $this->ensureMailQueueTable($db);
         $this->ensureSupportIndexes($db);
         $this->normaliseLegacyTicketStatuses($db);
         $this->ensurePrivateAttachmentStorage();
@@ -434,6 +435,36 @@ class Com_DevartsupportInstallerScript
             . 'KEY ' . $db->quoteName('idx_created_by') . ' (' . $db->quoteName('created_by') . ')'
             . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci'
         )->execute();
+    }
+
+    private function ensureMailQueueTable(object $db): void
+    {
+        try {
+            $db->setQuery(
+                'CREATE TABLE IF NOT EXISTS ' . $db->quoteName('#__devartsupport_mail_queue') . ' ('
+                . $db->quoteName('id') . ' bigint unsigned NOT NULL AUTO_INCREMENT,'
+                . $db->quoteName('ticket_id') . ' int unsigned NOT NULL DEFAULT 0,'
+                . $db->quoteName('mail_kind') . ' varchar(32) NOT NULL DEFAULT \'\','
+                . $db->quoteName('recipients_json') . ' text NOT NULL,'
+                . $db->quoteName('bcc_json') . ' text NOT NULL,'
+                . $db->quoteName('subject') . ' varchar(255) NOT NULL DEFAULT \'\','
+                . $db->quoteName('body') . ' mediumtext NOT NULL,'
+                . $db->quoteName('status') . ' varchar(16) NOT NULL DEFAULT \'pending\','
+                . $db->quoteName('attempts') . ' tinyint unsigned NOT NULL DEFAULT 0,'
+                . $db->quoteName('max_attempts') . ' tinyint unsigned NOT NULL DEFAULT 5,'
+                . $db->quoteName('last_error') . ' varchar(512) NOT NULL DEFAULT \'\','
+                . $db->quoteName('created') . ' datetime NOT NULL,'
+                . $db->quoteName('available_at') . ' datetime NOT NULL,'
+                . $db->quoteName('sent_at') . ' datetime DEFAULT NULL,'
+                . 'PRIMARY KEY (' . $db->quoteName('id') . '),'
+                . 'KEY ' . $db->quoteName('idx_status_available') . ' ('
+                . $db->quoteName('status') . ',' . $db->quoteName('available_at') . ',' . $db->quoteName('id') . '),'
+                . 'KEY ' . $db->quoteName('idx_ticket_id') . ' (' . $db->quoteName('ticket_id') . ')'
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci'
+            )->execute();
+        } catch (\Throwable) {
+            // Never block install/update on optional queue table creation.
+        }
     }
 
     private function ensurePrivateAttachmentStorage(): void

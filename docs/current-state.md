@@ -56,6 +56,7 @@ Confirmed from repository source only:
 - Optional author-copy email of a portal user’s own reply (not staff admin replies)
 - Configurable portal create/reply hourly rate limits (Options → Frontend)
 - Admin stale-form guard (`expected_modified`) and portal status-safe reopen on reply
+- Outbound mail queue (`#__devartsupport_mail_queue`) + Scheduler `devartsupport.send_mail`
 - Tools attachment storage health without exposing absolute paths
 - Joomla Privacy plugin export/remove for tickets, messages and attachments (`user_id` / `requester_email`)
 - Action Log plugin for ticket and attachment mutations (admin + portal)
@@ -64,11 +65,11 @@ Confirmed from repository source only:
 
 Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
 
-VPS-verified `1.0.0`: `pkg_devartsupport_v1.0.0.zip` (SHA-256 `0c150f9bab0c63f20f6e0fe220d31431a9371e8f45ce97e06910474b344acbb9`).
+Previous VPS-verified `1.0.0` (pre mail-queue): SHA-256 `0c150f9bab0c63f20f6e0fe220d31431a9371e8f45ce97e06910474b344acbb9`. Latest package pending VPS confirmation.
 
-See `docs/operations.md` for Cloudflare bypass, versioning, and Scheduler notes.
+See `docs/operations.md` for Cloudflare bypass, versioning, mail queue, and Scheduler notes.
 
-Next optional structural milestone: extract `PortalTicketService` from `TicketService` (core/pro prep). Optional later: outbound mail queue / send caps for heavy concurrent traffic.
+Next optional structural milestone: extract `PortalTicketService` from `TicketService` (core/pro prep).
 
 ## Known Limitations
 

@@ -32,6 +32,16 @@ Purge deletes private files first; database rows are removed only after the file
 
 Options → Frontend: `portal_create_hourly_cap` (default 10, range 1–100) and `portal_reply_hourly_cap` (default 30, range 1–300) per logged-in portal user per rolling hour.
 
+## Outbound mail queue
+
+Ticket notifications (staff, requester, author-copy, status) are written to `#__devartsupport_mail_queue` and sent by the Scheduler task `devartsupport.send_mail` (seeded every 5 minutes). Ticket saves never wait on SMTP.
+
+- Email Settings **test mail** still sends immediately.
+- Options → Mail queue: batch size (default 20) and max attempts (default 5).
+- Sent rows older than 7 days are purged by the same task.
+- Tools shows the current pending count.
+- Hosts must run Joomla Scheduled Tasks / cron often enough for timely delivery.
+
 ## Uninstall SQL
 
 `admin/sql/uninstall.mysql.utf8.sql` is intentionally a no-op (`SELECT 1`). Ticket tables and private files are preserved on uninstall by design. Manual cleanup is required if data must be removed.
