@@ -4,7 +4,7 @@
 
 Current manifest version:
 
-`1.0.44`
+`1.0.46`
 
 Package:
 
@@ -15,6 +15,7 @@ Extensions:
 - `com_devartsupport`
 - `plg_privacy_devartsupport`
 - `plg_actionlog_devartsupport`
+- `plg_task_devartsupport`
 
 ## Implemented Features
 
@@ -32,14 +33,17 @@ Confirmed from repository source only:
 - Administrator tickets filters with Clear and autosubmit
 - Private ticket attachments (administrator upload/download/delete)
 - Portal attachments when Options enable admin + portal switches (owner upload on new/reply; owner download; no portal delete)
-- Configurable allowed extensions (subset of built-in safe MIME catalog)
+- Configurable allowed extensions (subset of built-in safe MIME catalog, including RAR)
 - Attachment storage outside the Joomla web root (relocates beside outermost DOCUMENT_ROOT on subdirectory hosts) with legacy migration
+- Configurable private folder name under the private storage root (safe name only; migrate on rename)
+- Optional attachment retention (default off) with `plg_task_devartsupport` daily Scheduler purge and UI warnings
 - Upload MIME validation via `finfo`, forced download disposition, no-store cache headers
 - Attachment downloads require POST with a CSRF token
 - Uninstall preserves ticket tables and private attachment files
 - Deleted Joomla users fall back safely in the message thread
 - Staff email notifications for new tickets, replies and status changes
-- Optional requester email when staff reply (login link only; default off)
+- Optional requester email when staff reply or change status (login link only; default off)
+- Auto-create Registered-access site portal menu item on install/update when missing
 - Portal guests redirect to login with return URL; portal pages are no-cache / noindex
 - Full Email Settings transport options (global/SMTP/Sendmail/PHP mail) plus test email
 - Attachment options and per-category disable override
@@ -56,7 +60,7 @@ Confirmed from repository source only:
 - Registered portal ACL defaults for `core.create` / `core.edit` when unset
 - Staff manage/reply other users’ tickets only in administrator (portal is ownership-scoped)
 
-Last VPS-verified package: `1.0.44`.
+Last VPS-verified package: `1.0.46`.
 
 ## Known Limitations
 
