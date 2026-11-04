@@ -59,8 +59,8 @@ final class MailQueueStorage
 
         $now = (new Date('now'))->toSql();
         $maxAttempts = MailQueueSettings::maxAttempts();
-        $kind = substr(trim($mailKind), 0, 32);
-        $subject = substr(trim($subject), 0, 255);
+        $kind = self::truncateUtf8(trim($mailKind), 32);
+        $subject = self::truncateUtf8(trim($subject), 255);
         $ticketId = max(0, $ticketId);
         $attempts = 0;
         $status = self::STATUS_PENDING;
@@ -216,7 +216,7 @@ final class MailQueueStorage
             return;
         }
 
-        $error = substr(trim($error), 0, 512);
+        $error = self::truncateUtf8(trim($error), 512);
         $maxAttempts = max(1, $maxAttempts);
 
         if ($attempts >= $maxAttempts) {
@@ -243,20 +243,56 @@ final class MailQueueStorage
 
     public function purgeOldSent(int $olderThanDays = MailQueueSettings::SENT_RETENTION_DAYS): int
     {
-        $olderThanDays = max(1, $olderThanDays);
-        $cutoff = (new Date('now -' . $olderThanDays . ' days'))->toSql();
-        $status = self::STATUS_SENT;
+        return $this->purgeOldTerminalRows(
+            $olderThanDays,
+            MailQueueSettings::FAILED_RETENTION_DAYS
+        );
+    }
 
-        $query = $this->db->createQuery()
+    /**
+     * Remove terminal queue rows: sent after `$sentDays`, failed after `$failedDays`.
+     */
+    public function purgeOldTerminalRows(
+        int $sentDays = MailQueueSettings::SENT_RETENTION_DAYS,
+        int $failedDays = MailQueueSettings::FAILED_RETENTION_DAYS
+    ): int {
+        $sentDays = max(1, $sentDays);
+        $failedDays = max(1, $failedDays);
+        $sentCutoff = (new Date('now -' . $sentDays . ' days'))->toSql();
+        $failedCutoff = (new Date('now -' . $failedDays . ' days'))->toSql();
+        $sent = self::STATUS_SENT;
+        $failed = self::STATUS_FAILED;
+        $removed = 0;
+
+        $sentQuery = $this->db->createQuery()
             ->delete($this->db->quoteName('#__devartsupport_mail_queue'))
-            ->where($this->db->quoteName('status') . ' = :status')
+            ->where($this->db->quoteName('status') . ' = :sentStatus')
             ->where($this->db->quoteName('sent_at') . ' IS NOT NULL')
-            ->where($this->db->quoteName('sent_at') . ' < :cutoff');
-        $query->bind(':status', $status);
-        $query->bind(':cutoff', $cutoff);
-        $this->db->setQuery($query)->execute();
+            ->where($this->db->quoteName('sent_at') . ' < :sentCutoff');
+        $sentQuery->bind(':sentStatus', $sent);
+        $sentQuery->bind(':sentCutoff', $sentCutoff);
+        $this->db->setQuery($sentQuery)->execute();
+        $removed += $this->db->getAffectedRows();
 
-        return $this->db->getAffectedRows();
+        $failedQuery = $this->db->createQuery()
+            ->delete($this->db->quoteName('#__devartsupport_mail_queue'))
+            ->where($this->db->quoteName('status') . ' = :failedStatus')
+            ->where($this->db->quoteName('created') . ' < :failedCutoff');
+        $failedQuery->bind(':failedStatus', $failed);
+        $failedQuery->bind(':failedCutoff', $failedCutoff);
+        $this->db->setQuery($failedQuery)->execute();
+        $removed += $this->db->getAffectedRows();
+
+        return $removed;
+    }
+
+    private static function truncateUtf8(string $value, int $maxChars): string
+    {
+        if ($maxChars < 1 || mb_strlen($value) <= $maxChars) {
+            return $value;
+        }
+
+        return mb_substr($value, 0, $maxChars);
     }
 
     /**

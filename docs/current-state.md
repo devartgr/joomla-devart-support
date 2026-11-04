@@ -55,8 +55,8 @@ Confirmed from repository source only:
 - Ticket threads load in pages (100, expandable to 1000) with Load older messages
 - Optional author-copy email of a portal user’s own reply (not staff admin replies)
 - Configurable portal create/reply hourly rate limits (Options → Frontend)
-- Admin stale-form guard (`expected_modified`) and portal status-safe reopen on reply
-- Mail delivery Options: Immediate (default) or Queued (`#__devartsupport_mail_queue` + Scheduler `devartsupport.send_mail`)
+- Admin atomic stale-form guard (`expected_version` optimistic lock) and portal status-safe reopen on reply
+- Mail delivery Options: Immediate (default) or Queued (`#__devartsupport_mail_queue` + Scheduler `devartsupport.send_mail`); UTF-8-safe queue truncation; failed queue purge after 30 days
 - Tools attachment storage health without exposing absolute paths
 - Joomla Privacy plugin export/remove for tickets, messages and attachments (`user_id` / `requester_email`)
 - Action Log plugin for ticket and attachment mutations (admin + portal)
@@ -65,7 +65,7 @@ Confirmed from repository source only:
 
 Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
 
-Previous VPS-verified `1.0.0` (mail delivery): SHA-256 `5011f8f972eb5e91f155540124caf71aa6121ceed8ec0e00491e26fc6793fbac`. Latest package (`PortalTicketService` split) pending VPS confirmation.
+Previous VPS-verified `1.0.0` (mail delivery): SHA-256 `5011f8f972eb5e91f155540124caf71aa6121ceed8ec0e00491e26fc6793fbac`. Latest package (atomic ticket version + mail-queue hardening) pending VPS confirmation.
 
 See `docs/operations.md` for Cloudflare bypass, versioning, mail queue, and Scheduler notes.
 

@@ -126,10 +126,10 @@ class HtmlView extends BaseHtmlView
             $data = array_merge($data, $saved);
         }
 
-        // Always bind the live modified stamp so a stale-form retry can succeed
-        // after the administrator reloads the current ticket state.
+        // Always bind the live optimistic-lock version so a stale-form retry can
+        // succeed after the administrator reloads the current ticket state.
         if (!$this->isNew && $this->ticket !== null) {
-            $data['expected_modified'] = (string) ($this->ticket->modified ?? '');
+            $data['expected_version'] = max(1, (int) ($this->ticket->version ?? 1));
         }
 
         if ($this->getLayout() === 'default') {

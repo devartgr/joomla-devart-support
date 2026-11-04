@@ -19,16 +19,16 @@ Registered-user site portal and administrator staff desk are in place: tickets, 
 # Verified Package
 Previous VPS-verified: SHA-256 `5011f8f972eb5e91f155540124caf71aa6121ceed8ec0e00491e26fc6793fbac` (mail delivery).
 
-Pending VPS confirmation of the latest `pkg_devartsupport_v1.0.0.zip` (`PortalTicketService` split).
+Pending VPS confirmation of the latest `pkg_devartsupport_v1.0.0.zip` (atomic `version` lock + mail-queue hardening).
 
 # Verified Creation Date
-`2026-11-04` (mail delivery); portal-service split package pending VPS
+`2026-11-04` (mail delivery); concurrency/mail-queue package pending VPS
 
 # Last Completed
-Local implementation of `PortalTicketService` / `AbstractTicketService` split.
+Local atomic ticket `version` lock, mail-queue UTF-8 truncation, failed-queue purge.
 
 # Current Milestone
-`PortalTicketService` split on `1.0.0` — awaiting VPS confirmation.
+Concurrency + mail-queue hardening on `1.0.0` — awaiting VPS confirmation.
 
 # Next Milestone
 Declare the first public release when ready (still `1.0.0` until then), or guest tickets after approving `docs/guest-tickets-prerequisites.md`. Assignment, modules and live chat remain out of scope for now.

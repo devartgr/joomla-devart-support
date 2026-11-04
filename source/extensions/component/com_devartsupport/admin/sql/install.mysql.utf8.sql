@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `#__devartsupport_tickets` (
   `created_by` int unsigned NOT NULL DEFAULT 0,
   `modified` datetime NOT NULL,
   `modified_by` int unsigned NOT NULL DEFAULT 0,
+  `version` int unsigned NOT NULL DEFAULT 1,
   `last_message_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_status_last` (`status`,`last_message_at`),

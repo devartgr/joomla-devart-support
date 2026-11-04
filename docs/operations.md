@@ -28,6 +28,10 @@ Component params may contain the internal marker `scheduler_seeded_attachment_pu
 
 Purge deletes private files first; database rows are removed only after the file is gone (or was already missing). Failed file deletes leave the row for the next run.
 
+## Admin ticket concurrency
+
+Administrator ticket edit carries a hidden `expected_version` (integer row version). The save `UPDATE` succeeds only when that version still matches and then increments it atomically. Portal replies/status/priority and staff bulk status changes also bump `version`, so a stale open admin form cannot silently overwrite a newer change. Reload and retry when the stale-form message appears.
+
 ## Portal rate limits
 
 Options → Frontend: `portal_create_hourly_cap` (default 10, range 1–100) and `portal_reply_hourly_cap` (default 30, range 1–300) per logged-in portal user per rolling hour.
@@ -39,8 +43,10 @@ Options → Mail delivery (default **Immediate**): ticket notifications send in 
 **Queued** mode writes notifications to `#__devartsupport_mail_queue` and the Scheduler task `devartsupport.send_mail` (seeded every 5 minutes) delivers them — better under heavy concurrent traffic or tight SMTP quotas. Ticket saves still never fail because of SMTP errors (fail-soft).
 
 - Email Settings **test mail** always sends immediately.
-- When Queued: Options show batch size (default 20) and max attempts (default 5); sent rows older than 7 days are purged by the task; Tools shows pending count.
-- Queued mode needs frequent Scheduled Tasks / cron.
+- When Queued: Options show batch size (default 20) and max attempts (default 5); sent rows older than 7 days and failed rows older than 30 days are purged by the task; Tools shows pending count.
+- Queued mode needs reliable scheduling: prefer system cron or WebCron that hits Scheduled Tasks often. Lazy browser-triggered Scheduler alone may delay delivery on low-traffic sites.
+- Upgrade installs create `#__devartsupport_mail_queue` in component postflight (`ensureMailQueueTable`) when missing.
+- Known window: if a worker process dies after SMTP accept but before `sent` is recorded, the claim recovery may retry and can send a duplicate. Acceptable for ticket notifications; do not add complex de-dupe without measuring impact.
 
 ## Uninstall SQL
 

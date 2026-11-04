@@ -19,6 +19,8 @@
             <item>File-first attachment purge, portal status-safe reopen, admin stale-form guard, configurable portal rate limits</item>
             <item>Mail delivery Options: Immediate (default) or Queued Scheduler outbox for ticket notifications</item>
             <item>Portal ticket logic split into PortalTicketService (shared AbstractTicketService helpers)</item>
+            <item>Atomic admin ticket save via integer version optimistic lock</item>
+            <item>Mail queue UTF-8-safe truncation and failed-row purge after 30 days</item>
         </change>
         <note>
             <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>

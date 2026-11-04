@@ -27,6 +27,7 @@ final class MailQueueSettings
     public const MIN_MAX_ATTEMPTS = 1;
     public const MAX_MAX_ATTEMPTS = 10;
     public const SENT_RETENTION_DAYS = 7;
+    public const FAILED_RETENTION_DAYS = 30;
 
     public static function deliveryMode(): string
     {

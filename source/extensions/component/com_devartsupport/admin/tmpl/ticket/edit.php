@@ -130,8 +130,8 @@ $attachmentFlags = [
     <?php if (!$this->isNew) : ?>
         <input
             type="hidden"
-            name="jform[expected_modified]"
-            value="<?php echo $escape((string) $this->form->getValue('expected_modified')); ?>"
+            name="jform[expected_version]"
+            value="<?php echo (int) $this->form->getValue('expected_version'); ?>"
         >
     <?php endif; ?>
     <?php echo HTMLHelper::_('form.token'); ?>

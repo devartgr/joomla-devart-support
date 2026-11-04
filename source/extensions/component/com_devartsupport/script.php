@@ -341,6 +341,17 @@ class Com_DevartsupportInstallerScript
                 )->execute();
             }
 
+            $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+
+            if (!isset($columns['version'])) {
+                $after = isset($columns['modified_by']) ? 'modified_by' : (isset($columns['modified']) ? 'modified' : 'subject');
+                $db->setQuery(
+                    'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+                    . ' ADD COLUMN ' . $db->quoteName('version')
+                    . ' int unsigned NOT NULL DEFAULT 1 AFTER ' . $db->quoteName($after)
+                )->execute();
+            }
+
             $this->ensureTicketIndex($db, 'idx_category_id', 'category_id');
             $this->ensureTicketIndex($db, 'idx_priority', 'priority');
             $this->ensureTicketIndex($db, 'idx_published', 'published');

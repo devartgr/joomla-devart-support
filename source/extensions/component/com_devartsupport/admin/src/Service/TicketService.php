@@ -98,10 +98,10 @@ final class TicketService extends AbstractTicketService
             throw new TicketNotFoundException('COM_DEVARTSUPPORT_ERROR_NOT_FOUND');
         }
 
-        $expectedModified = trim((string) ($input['expected_modified'] ?? ''));
-        $liveModified = trim((string) ($existing->modified ?? ''));
+        $expectedVersion = (int) ($input['expected_version'] ?? 0);
+        $liveVersion = max(1, (int) ($existing->version ?? 1));
 
-        if ($expectedModified === '' || $expectedModified !== $liveModified) {
+        if ($expectedVersion < 1 || $expectedVersion !== $liveVersion) {
             throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_TICKET_STALE');
         }
 
@@ -132,7 +132,11 @@ final class TicketService extends AbstractTicketService
             }
 
             $storedNames = $this->storeUploads($id, $files, $now, $staffUserId);
-            $this->tickets->update($id, $data);
+
+            if (!$this->tickets->update($id, $data, $expectedVersion)) {
+                throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_TICKET_STALE');
+            }
+
             $this->tickets->transactionCommit();
         } catch (\Throwable $error) {
             $this->tickets->transactionRollback();

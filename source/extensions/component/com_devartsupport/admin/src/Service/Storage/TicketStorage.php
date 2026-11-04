@@ -314,6 +314,8 @@ final class TicketStorage
     }
 
     /**
+     * Atomic staff edit: succeeds only when `$expectedVersion` still matches.
+     *
      * @param array{
      *     subject: string,
      *     status: string,
@@ -327,8 +329,12 @@ final class TicketStorage
      *     last_message_at?: string
      * } $data
      */
-    public function update(int $id, array $data): void
+    public function update(int $id, array $data, int $expectedVersion): bool
     {
+        if ($id < 1 || $expectedVersion < 1) {
+            return false;
+        }
+
         $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_tickets'))
             ->set($this->db->quoteName('subject') . ' = :subject')
@@ -340,7 +346,9 @@ final class TicketStorage
             ->set($this->db->quoteName('requester_email') . ' = :requesterEmail')
             ->set($this->db->quoteName('modified') . ' = :modified')
             ->set($this->db->quoteName('modified_by') . ' = :modifiedBy')
-            ->where($this->db->quoteName('id') . ' = :ticketId');
+            ->set($this->db->quoteName('version') . ' = ' . $this->db->quoteName('version') . ' + 1')
+            ->where($this->db->quoteName('id') . ' = :ticketId')
+            ->where($this->db->quoteName('version') . ' = :expectedVersion');
 
         $query->bind(':subject', $data['subject']);
         $query->bind(':status', $data['status']);
@@ -352,6 +360,7 @@ final class TicketStorage
         $query->bind(':modified', $data['modified']);
         $query->bind(':modifiedBy', $data['modified_by'], ParameterType::INTEGER);
         $query->bind(':ticketId', $id, ParameterType::INTEGER);
+        $query->bind(':expectedVersion', $expectedVersion, ParameterType::INTEGER);
 
         if (isset($data['last_message_at'])) {
             $query->set($this->db->quoteName('last_message_at') . ' = :lastMessageAt');
@@ -359,6 +368,8 @@ final class TicketStorage
         }
 
         $this->db->setQuery($query)->execute();
+
+        return $this->db->getAffectedRows() === 1;
     }
 
     /**
@@ -391,7 +402,8 @@ final class TicketStorage
             ->update($this->db->quoteName('#__devartsupport_tickets'))
             ->set($this->db->quoteName('status') . ' = :status')
             ->set($this->db->quoteName('modified') . ' = :modified')
-            ->set($this->db->quoteName('modified_by') . ' = :modifiedBy');
+            ->set($this->db->quoteName('modified_by') . ' = :modifiedBy')
+            ->set($this->db->quoteName('version') . ' = ' . $this->db->quoteName('version') . ' + 1');
         $query->bind(':status', $status);
         $query->bind(':modified', $modified);
         $query->bind(':modifiedBy', $modifiedBy, ParameterType::INTEGER);
@@ -415,6 +427,7 @@ final class TicketStorage
             ->set($this->db->quoteName('priority') . ' = :priority')
             ->set($this->db->quoteName('modified') . ' = :modified')
             ->set($this->db->quoteName('modified_by') . ' = :modifiedBy')
+            ->set($this->db->quoteName('version') . ' = ' . $this->db->quoteName('version') . ' + 1')
             ->where($this->db->quoteName('id') . ' = :ticketId');
         $query->bind(':priority', $priority);
         $query->bind(':modified', $modified);
@@ -450,6 +463,7 @@ final class TicketStorage
             ->set($this->db->quoteName('modified') . ' = :modified')
             ->set($this->db->quoteName('modified_by') . ' = :modifiedBy')
             ->set($this->db->quoteName('last_message_at') . ' = :lastMessageAt')
+            ->set($this->db->quoteName('version') . ' = ' . $this->db->quoteName('version') . ' + 1')
             ->where($this->db->quoteName('id') . ' = :ticketId');
         $query->bind(':closedStatus', $closed);
         $query->bind(':openStatus', $open);
