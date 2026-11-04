@@ -59,6 +59,14 @@ $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTE
                         $this->attachmentMaxMegabytes
                     )); ?>
                 </div>
+                <?php if ($this->attachmentsRetentionEnabled) : ?>
+                    <div class="form-text text-warning">
+                        <?php echo $escape(Text::sprintf(
+                            'COM_DEVARTSUPPORT_ATTACHMENTS_RETENTION_WARNING',
+                            $this->attachmentsRetentionDays
+                        )); ?>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 

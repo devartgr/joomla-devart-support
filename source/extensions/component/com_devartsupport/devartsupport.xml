@@ -7,7 +7,7 @@
     <license>GNU General Public License version 3 or later</license>
     <authorEmail>devartgr@gmail.com</authorEmail>
     <authorUrl>https://devart.gr</authorUrl>
-    <version>1.0.44</version>
+    <version>1.0.46</version>
     <php_minimum>8.3.0</php_minimum>
     <targetplatform name="joomla" version="6.*" />
     <description>COM_DEVARTSUPPORT_XML_DESCRIPTION</description>

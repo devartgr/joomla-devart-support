@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="task" method="upgrade" enabled="true">
+    <name>PLG_TASK_DEVARTSUPPORT</name>
+    <author>Stathopoulos Kostas - DevArt</author>
+    <authorEmail>devartgr@gmail.com</authorEmail>
+    <authorUrl>https://devart.gr</authorUrl>
+    <creationDate>2026-11-04</creationDate>
+    <copyright>Copyright (C) 2026 Stathopoulos Kostas - DevArt. All rights reserved.</copyright>
+    <license>GNU General Public License version 3 or later</license>
+    <version>1.0.46</version>
+    <description>PLG_TASK_DEVARTSUPPORT_XML_DESCRIPTION</description>
+    <namespace path="src">Devart\Plugin\Task\Devartsupport</namespace>
+    <scriptfile>script.php</scriptfile>
+    <php_minimum>8.3.0</php_minimum>
+    <targetplatform name="joomla" version="6.*" />
+    <files>
+        <folder plugin="devartsupport">services</folder>
+        <folder>src</folder>
+        <filename>script.php</filename>
+    </files>
+    <languages>
+        <language tag="en-GB">language/en-GB/plg_task_devartsupport.ini</language>
+        <language tag="en-GB">language/en-GB/plg_task_devartsupport.sys.ini</language>
+        <language tag="el-GR">language/el-GR/plg_task_devartsupport.ini</language>
+        <language tag="el-GR">language/el-GR/plg_task_devartsupport.sys.ini</language>
+        <language tag="fr-FR">language/fr-FR/plg_task_devartsupport.ini</language>
+        <language tag="fr-FR">language/fr-FR/plg_task_devartsupport.sys.ini</language>
+        <language tag="de-DE">language/de-DE/plg_task_devartsupport.ini</language>
+        <language tag="de-DE">language/de-DE/plg_task_devartsupport.sys.ini</language>
+        <language tag="es-ES">language/es-ES/plg_task_devartsupport.ini</language>
+        <language tag="es-ES">language/es-ES/plg_task_devartsupport.sys.ini</language>
+        <language tag="it-IT">language/it-IT/plg_task_devartsupport.ini</language>
+        <language tag="it-IT">language/it-IT/plg_task_devartsupport.sys.ini</language>
+        <language tag="pt-BR">language/pt-BR/plg_task_devartsupport.ini</language>
+        <language tag="pt-BR">language/pt-BR/plg_task_devartsupport.sys.ini</language>
+        <language tag="cs-CZ">language/cs-CZ/plg_task_devartsupport.ini</language>
+        <language tag="cs-CZ">language/cs-CZ/plg_task_devartsupport.sys.ini</language>
+        <language tag="nl-NL">language/nl-NL/plg_task_devartsupport.ini</language>
+        <language tag="nl-NL">language/nl-NL/plg_task_devartsupport.sys.ini</language>
+        <language tag="pl-PL">language/pl-PL/plg_task_devartsupport.ini</language>
+        <language tag="pl-PL">language/pl-PL/plg_task_devartsupport.sys.ini</language>
+        <language tag="ru-RU">language/ru-RU/plg_task_devartsupport.ini</language>
+        <language tag="ru-RU">language/ru-RU/plg_task_devartsupport.sys.ini</language>
+        <language tag="uk-UA">language/uk-UA/plg_task_devartsupport.ini</language>
+        <language tag="uk-UA">language/uk-UA/plg_task_devartsupport.sys.ini</language>
+        <language tag="ja-JP">language/ja-JP/plg_task_devartsupport.ini</language>
+        <language tag="ja-JP">language/ja-JP/plg_task_devartsupport.sys.ini</language>
+        <language tag="tr-TR">language/tr-TR/plg_task_devartsupport.ini</language>
+        <language tag="tr-TR">language/tr-TR/plg_task_devartsupport.sys.ini</language>
+        <language tag="zh-CN">language/zh-CN/plg_task_devartsupport.ini</language>
+        <language tag="zh-CN">language/zh-CN/plg_task_devartsupport.sys.ini</language>
+    </languages>
+</extension>

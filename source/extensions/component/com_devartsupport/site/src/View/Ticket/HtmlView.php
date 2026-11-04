@@ -61,6 +61,10 @@ class HtmlView extends BaseHtmlView
 
     public string $attachmentAccept = '';
 
+    public bool $attachmentsRetentionEnabled = false;
+
+    public int $attachmentsRetentionDays = 365;
+
     public function display($tpl = null): void
     {
         $app = Factory::getApplication();
@@ -71,6 +75,8 @@ class HtmlView extends BaseHtmlView
         $this->attachmentMaxFiles = AttachmentSettings::maxFiles();
         $this->attachmentMaxMegabytes = AttachmentSettings::maxMegabytes();
         $this->attachmentAccept = AttachmentSettings::acceptAttribute();
+        $this->attachmentsRetentionEnabled = AttachmentSettings::retentionEnabled();
+        $this->attachmentsRetentionDays = AttachmentSettings::retentionDays();
 
         if ($this->isNew) {
             $user = PortalAccess::requirePermission('core.create');

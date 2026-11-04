@@ -163,6 +163,14 @@ $token = HTMLHelper::_('form.token');
     <?php if ($this->attachments !== []) : ?>
         <section class="devart-support-portal-attachments mt-4" aria-label="<?php echo $escape(Text::_('COM_DEVARTSUPPORT_ATTACHMENTS')); ?>">
             <h2><?php echo $escape(Text::_('COM_DEVARTSUPPORT_ATTACHMENTS')); ?></h2>
+            <?php if ($this->attachmentsRetentionEnabled) : ?>
+                <p class="alert alert-warning">
+                    <?php echo $escape(Text::sprintf(
+                        'COM_DEVARTSUPPORT_ATTACHMENTS_RETENTION_WARNING',
+                        $this->attachmentsRetentionDays
+                    )); ?>
+                </p>
+            <?php endif; ?>
             <ul class="devart-support-portal-attachment-list">
                 <?php foreach ($this->attachments as $attachment) : ?>
                     <?php $attachmentId = (int) $attachment->id; ?>
@@ -219,6 +227,14 @@ $token = HTMLHelper::_('form.token');
                                 $this->attachmentMaxMegabytes
                             )); ?>
                         </div>
+                        <?php if ($this->attachmentsRetentionEnabled) : ?>
+                            <div class="form-text text-warning">
+                                <?php echo $escape(Text::sprintf(
+                                    'COM_DEVARTSUPPORT_ATTACHMENTS_RETENTION_WARNING',
+                                    $this->attachmentsRetentionDays
+                                )); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 <button type="submit" class="btn btn-primary">

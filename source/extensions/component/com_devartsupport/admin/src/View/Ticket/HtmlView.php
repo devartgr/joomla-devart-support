@@ -56,6 +56,10 @@ class HtmlView extends BaseHtmlView
 
     public int $attachmentMaxMegabytes = 8;
 
+    public bool $attachmentsRetentionEnabled = false;
+
+    public int $attachmentsRetentionDays = 365;
+
     public bool $isNew = true;
 
     public function display($tpl = null): void
@@ -142,6 +146,8 @@ class HtmlView extends BaseHtmlView
         $this->attachmentCategoryFlags = TicketDesk::service()->categoryAttachmentFlags();
         $this->attachmentMaxFiles = AttachmentSettings::maxFiles();
         $this->attachmentMaxMegabytes = AttachmentSettings::maxMegabytes();
+        $this->attachmentsRetentionEnabled = AttachmentSettings::retentionEnabled();
+        $this->attachmentsRetentionDays = AttachmentSettings::retentionDays();
 
         ToolbarHelper::title(
             Text::_($this->isNew ? 'COM_DEVARTSUPPORT_TICKET_NEW' : 'COM_DEVARTSUPPORT_TICKET_EDIT'),

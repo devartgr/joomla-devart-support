@@ -30,6 +30,7 @@ final class Pkg_DevartsupportInstallerScript
     {
         $this->enablePrivacyPlugin();
         $this->enableActionLogPlugin();
+        $this->enableTaskPlugin();
         $this->registerActionLogExtension();
         $this->synchroniseInstalledVersions($parent);
     }
@@ -48,6 +49,11 @@ final class Pkg_DevartsupportInstallerScript
     private function enableActionLogPlugin(): void
     {
         $this->enablePlugin('actionlog', 'devartsupport');
+    }
+
+    private function enableTaskPlugin(): void
+    {
+        $this->enablePlugin('task', 'devartsupport');
     }
 
     private function enablePlugin(string $folder, string $element): void
@@ -122,6 +128,7 @@ final class Pkg_DevartsupportInstallerScript
             ['type' => 'package', 'element' => 'pkg_devartsupport', 'folder' => '', 'client_id' => 0],
             ['type' => 'plugin', 'element' => 'devartsupport', 'folder' => 'privacy', 'client_id' => 0],
             ['type' => 'plugin', 'element' => 'devartsupport', 'folder' => 'actionlog', 'client_id' => 0],
+            ['type' => 'plugin', 'element' => 'devartsupport', 'folder' => 'task', 'client_id' => 0],
         ] as $extension) {
             try {
                 $query = $db->getQuery(true)

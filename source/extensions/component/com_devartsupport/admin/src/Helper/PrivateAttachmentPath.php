@@ -128,7 +128,8 @@ final class PrivateAttachmentPath
 
     private static function resolveDirectory(): string
     {
-        $preferred = self::clean(dirname(JPATH_ROOT) . '/private/com_devartsupport');
+        $folder = AttachmentSettings::storageFolderName();
+        $preferred = self::clean(dirname(JPATH_ROOT) . '/private/' . $folder);
 
         if (!self::isInsideAnyWebRoot($preferred)) {
             return $preferred;
@@ -139,7 +140,7 @@ final class PrivateAttachmentPath
                 continue;
             }
 
-            $candidate = self::clean(dirname($root) . '/private/com_devartsupport');
+            $candidate = self::clean(dirname($root) . '/private/' . $folder);
 
             if ($candidate !== '' && $candidate !== '/' && !self::isInsideAnyWebRoot($candidate)) {
                 return $candidate;
@@ -150,24 +151,48 @@ final class PrivateAttachmentPath
     }
 
     /**
-     * Older builds always used dirname(JPATH_ROOT)/private/... even when that
-     * folder was still inside DOCUMENT_ROOT. Move those files to the safe path.
+     * Move files from previous private folder names / unsafe sibling paths into
+     * the current safe directory (folder rename + DOCUMENT_ROOT relocation).
      */
     private static function migrateFromRelocatedPaths(string $target): void
     {
         $target = rtrim(self::clean($target), '/');
-        $previous = rtrim(self::clean(dirname(JPATH_ROOT) . '/private/com_devartsupport'), '/');
+        $folder = AttachmentSettings::storageFolderName();
+        $names = array_values(array_unique([$folder, 'com_devartsupport']));
+        $parents = [dirname(JPATH_ROOT)];
 
-        if ($previous === $target || !is_dir($previous)) {
-            return;
+        foreach (self::webRoots() as $root) {
+            $parents[] = dirname($root);
         }
 
-        self::moveAttachmentFiles($previous, $target);
+        $candidates = [];
 
-        if (self::legacyHasNoAttachments($previous)) {
-            self::deleteDirectoryTree($previous);
-        } else {
-            self::writeDenyFiles($previous);
+        foreach (array_unique($parents) as $parent) {
+            $parent = rtrim(self::clean((string) $parent), '/');
+
+            if ($parent === '' || $parent === '/') {
+                continue;
+            }
+
+            foreach ($names as $name) {
+                $candidates[] = $parent . '/private/' . $name;
+            }
+        }
+
+        foreach (array_unique($candidates) as $previous) {
+            $previous = rtrim(self::clean($previous), '/');
+
+            if ($previous === $target || !is_dir($previous)) {
+                continue;
+            }
+
+            self::moveAttachmentFiles($previous, $target);
+
+            if (self::legacyHasNoAttachments($previous)) {
+                self::deleteDirectoryTree($previous);
+            } else {
+                self::writeDenyFiles($previous);
+            }
         }
     }
 

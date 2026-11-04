@@ -12,6 +12,17 @@
 Product change history for bootstrapped repositories begins below this template
 section.
 
+## 1.0.46 — 2026-11-04
+
+- Options: configurable private storage folder name (safe name under private/, with migrate).
+- Optional attachment retention (default off) with scheduled purge task plugin.
+- Upload/list UI warning when retention is enabled.
+- New `plg_task_devartsupport` seeds a daily Scheduler task.
+
+## 1.0.45 — 2026-11-04
+
+- Allow RAR in the safe attachment catalog (Options types list).
+
 ## 1.0.44 — 2026-11-04
 
 - Create a Registered-access site portal menu item on install/update when none exists.

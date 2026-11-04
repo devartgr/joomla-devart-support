@@ -43,7 +43,7 @@
             type="list"
             multiple="true"
             layout="joomla.form.field.list-fancy-select"
-            default="csv,doc,docx,gif,jpeg,jpg,pdf,png,txt,webp,xls,xlsx,zip"
+            default="csv,doc,docx,gif,jpeg,jpg,pdf,png,rar,txt,webp,xls,xlsx,zip"
             label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_TYPES"
             description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_TYPES_DESC"
             filter="cmd"
@@ -56,6 +56,7 @@
             <option value="jpg">jpg</option>
             <option value="pdf">pdf</option>
             <option value="png">png</option>
+            <option value="rar">rar</option>
             <option value="txt">txt</option>
             <option value="webp">webp</option>
             <option value="xls">xls</option>
@@ -74,6 +75,41 @@
             <option value="0">JNO</option>
             <option value="1">JYES</option>
         </field>
+        <field
+            name="attachments_storage_folder"
+            type="text"
+            default="com_devartsupport"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_STORAGE_FOLDER"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_STORAGE_FOLDER_DESC"
+            filter="cmd"
+            size="40"
+            maxlength="64"
+        />
+        <field
+            name="attachments_retention_enabled"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="0"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_RETENTION"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_RETENTION_DESC"
+            filter="integer"
+            showon="attachments_enabled:1"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="attachments_retention_days"
+            type="number"
+            default="365"
+            min="7"
+            max="3650"
+            step="1"
+            filter="integer"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_RETENTION_DAYS"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_RETENTION_DAYS_DESC"
+            showon="attachments_enabled:1[AND]attachments_retention_enabled:1"
+        />
         <field
             name="attachments_storage_note"
             type="note"

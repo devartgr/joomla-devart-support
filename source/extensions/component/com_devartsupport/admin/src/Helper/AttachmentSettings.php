@@ -26,7 +26,7 @@ final class AttachmentSettings
 
     /** Hard-coded safe catalog; Options may only enable a subset. */
     public const CATALOG_EXTENSIONS = [
-        'csv', 'doc', 'docx', 'gif', 'jpeg', 'jpg', 'pdf', 'png', 'txt', 'webp', 'xls', 'xlsx', 'zip',
+        'csv', 'doc', 'docx', 'gif', 'jpeg', 'jpg', 'pdf', 'png', 'rar', 'txt', 'webp', 'xls', 'xlsx', 'zip',
     ];
 
     /** @var array<string, string> */
@@ -39,6 +39,7 @@ final class AttachmentSettings
         'jpg'  => 'image/jpeg',
         'pdf'  => 'application/pdf',
         'png'  => 'image/png',
+        'rar'  => 'application/vnd.rar',
         'txt'  => 'text/plain',
         'webp' => 'image/webp',
         'xls'  => 'application/vnd.ms-excel',
@@ -60,6 +61,12 @@ final class AttachmentSettings
         'jpg'  => ['image/jpeg'],
         'pdf'  => ['application/pdf'],
         'png'  => ['image/png'],
+        'rar'  => [
+            'application/vnd.rar',
+            'application/x-rar-compressed',
+            'application/x-rar',
+            'application/octet-stream',
+        ],
         'txt'  => ['text/plain', 'text/csv'],
         'webp' => ['image/webp'],
         'xls'  => ['application/vnd.ms-excel', 'application/octet-stream'],
@@ -101,6 +108,41 @@ final class AttachmentSettings
     public static function maxBytes(): int
     {
         return self::maxMegabytes() * 1048576;
+    }
+
+    /**
+     * Safe folder name under the private storage root (not a free filesystem path).
+     */
+    public static function storageFolderName(): string
+    {
+        $raw = strtolower(trim((string) ComponentHelper::getParams('com_devartsupport')->get(
+            'attachments_storage_folder',
+            'com_devartsupport'
+        )));
+        $raw = preg_replace('/[^a-z0-9_-]/', '', $raw) ?? '';
+
+        if ($raw === '' || strlen($raw) > 64) {
+            return 'com_devartsupport';
+        }
+
+        return $raw;
+    }
+
+    public static function retentionEnabled(): bool
+    {
+        return self::enabled()
+            && ((int) ComponentHelper::getParams('com_devartsupport')->get('attachments_retention_enabled', 0)) === 1;
+    }
+
+    /**
+     * Retention window in days when enabled (7–3650).
+     */
+    public static function retentionDays(): int
+    {
+        return max(
+            7,
+            min(3650, (int) ComponentHelper::getParams('com_devartsupport')->get('attachments_retention_days', 365))
+        );
     }
 
     /**

@@ -306,6 +306,46 @@ final class AttachmentStorage
     }
 
     /**
+     * Delete attachment rows and private files older than $days (based on created).
+     */
+    public function purgeOlderThanDays(int $days): int
+    {
+        $days = max(1, $days);
+        $cutoff = gmdate('Y-m-d H:i:s', time() - ($days * 86400));
+
+        $query = $this->db->getQuery(true)
+            ->select([
+                $this->db->quoteName('id'),
+                $this->db->quoteName('stored_name'),
+            ])
+            ->from($this->db->quoteName('#__devartsupport_attachments'))
+            ->where($this->db->quoteName('created') . ' < :cutoff')
+            ->bind(':cutoff', $cutoff);
+        $this->db->setQuery($query);
+        $rows = array_values($this->db->loadObjectList() ?: []);
+
+        if ($rows === []) {
+            return 0;
+        }
+
+        $ids = [];
+        $stored = [];
+
+        foreach ($rows as $row) {
+            $ids[] = (int) $row->id;
+            $stored[] = (string) $row->stored_name;
+        }
+
+        $this->delete($ids);
+
+        foreach ($stored as $storedName) {
+            $this->deleteStoredFile($storedName);
+        }
+
+        return count($ids);
+    }
+
+    /**
      * @return list<string>
      */
     private function candidatePaths(string $storedName): array

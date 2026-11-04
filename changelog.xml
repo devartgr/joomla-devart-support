@@ -3,6 +3,34 @@
     <changelog>
         <element>pkg_devartsupport</element>
         <type>package</type>
+        <version>1.0.46</version>
+        <addition>
+            <item>Configurable private attachment folder name under the private storage root</item>
+            <item>Optional attachment retention with scheduled purge (plg_task_devartsupport)</item>
+            <item>Retention warning on admin and portal upload/list screens</item>
+        </addition>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.45</item>
+            <item>Retention stays off until enabled in Options; purge runs via Joomla Scheduler</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <version>1.0.45</version>
+        <addition>
+            <item>RAR added to the safe attachment file-type catalog</item>
+        </addition>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.44</item>
+            <item>Existing sites: enable rar under Options → Attachments if the types list was already saved</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
         <version>1.0.44</version>
         <addition>
             <item>Auto-create Registered site menu item for the support portal when missing</item>

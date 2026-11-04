@@ -59,6 +59,11 @@ $attachmentFlags = [
                     <div class="form-text">
                         <?php echo $escape(Text::sprintf('COM_DEVARTSUPPORT_FIELD_ATTACHMENTS_DESC', $this->attachmentMaxFiles, $this->attachmentMaxMegabytes)); ?>
                     </div>
+                    <?php if ($this->attachmentsRetentionEnabled) : ?>
+                        <div class="form-text text-warning">
+                            <?php echo $escape(Text::sprintf('COM_DEVARTSUPPORT_ATTACHMENTS_RETENTION_WARNING', $this->attachmentsRetentionDays)); ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="alert alert-info" data-devart-support-upload-disabled <?php echo $this->attachmentsUploadAllowed ? 'hidden' : ''; ?>>
                     <?php echo $escape(Text::_(
@@ -127,6 +132,11 @@ $attachmentFlags = [
 <?php if ($this->attachments !== []) : ?>
     <div class="devart-support-admin-wrap">
         <h3><?php echo $escape(Text::_('COM_DEVARTSUPPORT_ATTACHMENTS')); ?></h3>
+        <?php if ($this->attachmentsRetentionEnabled) : ?>
+            <p class="alert alert-warning">
+                <?php echo $escape(Text::sprintf('COM_DEVARTSUPPORT_ATTACHMENTS_RETENTION_WARNING', $this->attachmentsRetentionDays)); ?>
+            </p>
+        <?php endif; ?>
         <ul class="devart-support-attachments">
             <?php foreach ($this->attachments as $attachment) : ?>
                 <?php
