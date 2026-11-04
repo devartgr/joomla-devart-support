@@ -14,13 +14,18 @@ namespace Devart\Component\Devartsupport\Administrator\Helper;
 defined('_JEXEC') or die;
 
 /**
- * Canonical private attachment directory outside the Joomla web root.
+ * Canonical private attachment directory outside every public web root.
+ *
+ * Preferred location is dirname(JPATH_ROOT)/private/com_devartsupport.
+ * When Joomla lives in a subdirectory of DOCUMENT_ROOT (multi-demo hosts),
+ * that preferred path can still be web-reachable; we then store beside the
+ * outermost conflicting web root instead.
  */
 final class PrivateAttachmentPath
 {
     public static function directory(): string
     {
-        $directory = self::clean(dirname(JPATH_ROOT) . '/private/com_devartsupport');
+        $directory = self::resolveDirectory();
         self::ensureOutsideWebRoot($directory);
 
         return $directory;
@@ -72,6 +77,7 @@ final class PrivateAttachmentPath
 
         self::ensureOutsideWebRoot($directory);
         self::writeDenyFiles($directory);
+        self::migrateFromRelocatedPaths($directory);
     }
 
     public static function migrateLegacyFiles(): int
@@ -86,42 +92,7 @@ final class PrivateAttachmentPath
         }
 
         self::ensureDirectory();
-        $moved = 0;
-
-        foreach (scandir($legacy) ?: [] as $file) {
-            if ($file === '.' || $file === '..' || $file === '.htaccess' || $file === 'index.html') {
-                continue;
-            }
-
-            if (!preg_match('/^[a-f0-9]{32}\.[a-z0-9]{2,5}$/', $file)) {
-                continue;
-            }
-
-            $from = self::clean($legacy . '/' . $file);
-            $to = self::clean($target . '/' . $file);
-
-            if (!is_file($from)) {
-                continue;
-            }
-
-            if (is_file($to)) {
-                @unlink($from);
-                $moved++;
-
-                continue;
-            }
-
-            if (@rename($from, $to)) {
-                $moved++;
-
-                continue;
-            }
-
-            if (@copy($from, $to)) {
-                @unlink($from);
-                $moved++;
-            }
-        }
+        $moved = self::moveAttachmentFiles($legacy, $target);
 
         if (self::legacyHasNoAttachments($legacy)) {
             self::deleteDirectoryTree($legacy);
@@ -153,6 +124,103 @@ final class PrivateAttachmentPath
         }
 
         @rmdir($directory);
+    }
+
+    private static function resolveDirectory(): string
+    {
+        $preferred = self::clean(dirname(JPATH_ROOT) . '/private/com_devartsupport');
+
+        if (!self::isInsideAnyWebRoot($preferred)) {
+            return $preferred;
+        }
+
+        foreach (self::webRoots() as $root) {
+            if (!self::isInside($preferred, $root)) {
+                continue;
+            }
+
+            $candidate = self::clean(dirname($root) . '/private/com_devartsupport');
+
+            if ($candidate !== '' && $candidate !== '/' && !self::isInsideAnyWebRoot($candidate)) {
+                return $candidate;
+            }
+        }
+
+        throw new \RuntimeException('Attachment storage must remain outside the Joomla web root.');
+    }
+
+    /**
+     * Older builds always used dirname(JPATH_ROOT)/private/... even when that
+     * folder was still inside DOCUMENT_ROOT. Move those files to the safe path.
+     */
+    private static function migrateFromRelocatedPaths(string $target): void
+    {
+        $target = rtrim(self::clean($target), '/');
+        $previous = rtrim(self::clean(dirname(JPATH_ROOT) . '/private/com_devartsupport'), '/');
+
+        if ($previous === $target || !is_dir($previous)) {
+            return;
+        }
+
+        self::moveAttachmentFiles($previous, $target);
+
+        if (self::legacyHasNoAttachments($previous)) {
+            self::deleteDirectoryTree($previous);
+        } else {
+            self::writeDenyFiles($previous);
+        }
+    }
+
+    private static function moveAttachmentFiles(string $fromDirectory, string $toDirectory): int
+    {
+        $fromDirectory = self::clean($fromDirectory);
+        $toDirectory = self::clean($toDirectory);
+        $moved = 0;
+
+        if (!is_dir($fromDirectory) || $fromDirectory === $toDirectory) {
+            return 0;
+        }
+
+        if (!is_dir($toDirectory) && !mkdir($toDirectory, 0755, true) && !is_dir($toDirectory)) {
+            return 0;
+        }
+
+        foreach (scandir($fromDirectory) ?: [] as $file) {
+            if ($file === '.' || $file === '..' || $file === '.htaccess' || $file === 'index.html') {
+                continue;
+            }
+
+            if (!preg_match('/^[a-f0-9]{32}\.[a-z0-9]{2,5}$/', $file)) {
+                continue;
+            }
+
+            $from = self::clean($fromDirectory . '/' . $file);
+            $to = self::clean($toDirectory . '/' . $file);
+
+            if (!is_file($from)) {
+                continue;
+            }
+
+            if (is_file($to)) {
+                @unlink($from);
+                $moved++;
+
+                continue;
+            }
+
+            if (@rename($from, $to)) {
+                $moved++;
+
+                continue;
+            }
+
+            if (@copy($from, $to)) {
+                @unlink($from);
+                $moved++;
+            }
+        }
+
+        return $moved;
     }
 
     private static function legacyHasNoAttachments(string $directory): bool
@@ -191,34 +259,92 @@ final class PrivateAttachmentPath
 
     private static function ensureOutsideWebRoot(string $directory): void
     {
-        $candidates = array_filter([
-            realpath(JPATH_ROOT) ?: self::clean(JPATH_ROOT),
-            defined('JPATH_PUBLIC') ? (realpath(JPATH_PUBLIC) ?: self::clean((string) JPATH_PUBLIC)) : null,
-            isset($_SERVER['DOCUMENT_ROOT']) && is_string($_SERVER['DOCUMENT_ROOT']) && $_SERVER['DOCUMENT_ROOT'] !== ''
-                ? (realpath($_SERVER['DOCUMENT_ROOT']) ?: self::clean($_SERVER['DOCUMENT_ROOT']))
-                : null,
-        ]);
+        if (self::isInsideAnyWebRoot($directory)) {
+            throw new \RuntimeException('Attachment storage must remain outside the Joomla web root.');
+        }
 
-        $resolved = realpath($directory) ?: $directory;
-        $resolved = rtrim(self::clean($resolved), '/');
+        $legacy = rtrim(self::clean(self::legacyDirectory()), '/');
+        $resolved = rtrim(self::clean(realpath($directory) ?: $directory), '/');
 
-        foreach ($candidates as $root) {
-            $root = rtrim(self::clean((string) $root), '/');
+        if ($resolved === $legacy || str_starts_with($resolved . '/', $legacy . '/')) {
+            throw new \RuntimeException('Attachment storage must remain outside the Joomla web root.');
+        }
+    }
+
+    private static function isInsideAnyWebRoot(string $directory): bool
+    {
+        foreach (self::webRoots() as $root) {
+            if (self::isInside($directory, $root)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function isInside(string $directory, string $root): bool
+    {
+        $directory = rtrim(self::clean(realpath($directory) ?: $directory), '/');
+        $root = rtrim(self::clean(realpath($root) ?: $root), '/');
+
+        if ($directory === '' || $root === '') {
+            return false;
+        }
+
+        return $directory === $root || str_starts_with($directory . '/', $root . '/');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function webRoots(): array
+    {
+        $candidates = [
+            JPATH_ROOT,
+            defined('JPATH_PUBLIC') ? (string) JPATH_PUBLIC : null,
+        ];
+
+        if (isset($_SERVER['DOCUMENT_ROOT']) && is_string($_SERVER['DOCUMENT_ROOT']) && $_SERVER['DOCUMENT_ROOT'] !== '') {
+            $documentRoot = self::clean($_SERVER['DOCUMENT_ROOT']);
+            // Herd/Valet may set DOCUMENT_ROOT to "/"; ignore useless roots.
+            if ($documentRoot !== '/' && strlen($documentRoot) > 1) {
+                $resolvedDocumentRoot = realpath($documentRoot) ?: $documentRoot;
+                $siteRoot = realpath(JPATH_ROOT) ?: self::clean(JPATH_ROOT);
+
+                // Only treat DOCUMENT_ROOT as a web root when it contains this site
+                // (subdirectory installs / multi-demo hosts). Unrelated values are ignored.
+                if (self::isInside($siteRoot, $resolvedDocumentRoot) || self::samePath($siteRoot, $resolvedDocumentRoot)) {
+                    $candidates[] = $resolvedDocumentRoot;
+                }
+            }
+        }
+
+        $roots = [];
+
+        foreach ($candidates as $candidate) {
+            if (!is_string($candidate) || $candidate === '') {
+                continue;
+            }
+
+            $root = rtrim(self::clean(realpath($candidate) ?: $candidate), '/');
 
             if ($root === '') {
                 continue;
             }
 
-            if ($resolved === $root || str_starts_with($resolved . '/', $root . '/')) {
-                throw new \RuntimeException('Attachment storage must remain outside the Joomla web root.');
-            }
+            $roots[$root] = $root;
         }
 
-        $legacy = rtrim(self::clean(self::legacyDirectory()), '/');
+        // Widest roots first so relocation climbs out of the outermost public tree.
+        $list = array_values($roots);
+        usort($list, static fn (string $a, string $b): int => strlen($a) <=> strlen($b));
 
-        if ($resolved === $legacy || str_starts_with($resolved . '/', $legacy . '/')) {
-            throw new \RuntimeException('Attachment storage must remain outside the Joomla web root.');
-        }
+        return $list;
+    }
+
+    private static function samePath(string $left, string $right): bool
+    {
+        return rtrim(self::clean($left), '/') === rtrim(self::clean($right), '/');
     }
 
     private static function clean(string $path): string

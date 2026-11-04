@@ -3,6 +3,18 @@
     <changelog>
         <element>pkg_devartsupport</element>
         <type>package</type>
+        <version>1.0.42</version>
+        <fix>
+            <item>Private attachment path relocates outside DOCUMENT_ROOT for subdirectory Joomla installs</item>
+        </fix>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.41</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
         <version>1.0.41</version>
         <addition>
             <item>Portal attachments with configurable allowed types and frontend enable switch</item>

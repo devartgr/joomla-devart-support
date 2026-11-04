@@ -12,6 +12,10 @@
 Product change history for bootstrapped repositories begins below this template
 section.
 
+## 1.0.42 — 2026-11-04
+
+- Fixed private attachment storage on subdirectory / multi-demo hosts where `dirname(JPATH_ROOT)/private` still sits inside `DOCUMENT_ROOT` (Herd parent roots and VPS demo folders).
+
 ## 1.0.41 — 2026-11-04
 
 - Full site language pass for all 15 packaged locales (portal, priority/close/reopen, attachments).
