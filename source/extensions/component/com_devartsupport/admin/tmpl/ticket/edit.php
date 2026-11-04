@@ -131,7 +131,7 @@ $attachmentFlags = [
         <input
             type="hidden"
             name="jform[expected_version]"
-            value="<?php echo (int) $this->form->getValue('expected_version'); ?>"
+            value="<?php echo max(1, (int) ($this->form->getValue('expected_version') ?: ($this->ticket->version ?? 1))); ?>"
         >
     <?php endif; ?>
     <?php echo HTMLHelper::_('form.token'); ?>

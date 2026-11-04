@@ -2,6 +2,7 @@
 <form>
     <fieldset name="details" label="COM_DEVARTSUPPORT_TICKET">
         <field name="id" type="hidden" default="0" />
+        <field name="expected_version" type="hidden" filter="integer" default="0" />
         <field
             name="subject"
             type="text"

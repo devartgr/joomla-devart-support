@@ -20,6 +20,7 @@
             <item>Mail delivery Options: Immediate (default) or Queued Scheduler outbox for ticket notifications</item>
             <item>Portal ticket logic split into PortalTicketService (shared AbstractTicketService helpers)</item>
             <item>Atomic admin ticket save via integer version optimistic lock</item>
+            <item>Fix expected_version binding on the admin ticket form (stale-save false positive)</item>
             <item>Mail queue UTF-8-safe truncation and failed-row purge after 30 days</item>
         </change>
         <note>
