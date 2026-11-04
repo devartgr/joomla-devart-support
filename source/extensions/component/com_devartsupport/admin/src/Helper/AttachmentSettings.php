@@ -74,7 +74,14 @@ final class AttachmentSettings
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'application/zip',
         ],
-        'zip'  => ['application/zip', 'application/x-zip-compressed'],
+        // Hosts differ: finfo may report x-zip, zip-compressed, or octet-stream.
+        'zip'  => [
+            'application/zip',
+            'application/x-zip',
+            'application/x-zip-compressed',
+            'multipart/x-zip',
+            'application/octet-stream',
+        ],
     ];
 
     public static function enabled(): bool

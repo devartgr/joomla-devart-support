@@ -19,7 +19,7 @@ Registered-user site portal and administrator staff desk are in place: tickets, 
 # Verified Package
 Previous VPS-verified: SHA-256 `5011f8f972eb5e91f155540124caf71aa6121ceed8ec0e00491e26fc6793fbac` (mail delivery).
 
-Pending VPS confirmation of the latest `pkg_devartsupport_v1.0.0.zip` (atomic `version` lock + mail-queue hardening).
+Pending VPS confirmation of the latest `pkg_devartsupport_v1.0.0.zip` (ZIP MIME allowlist fix).
 
 # Verified Creation Date
 `2026-11-04` (mail delivery); concurrency/mail-queue package pending VPS

@@ -30,6 +30,7 @@ section.
 - Split portal ticket logic into `PortalTicketService` (shared helpers in `AbstractTicketService`; staff desk remains `TicketService`).
 - Atomic admin ticket save via integer `version` optimistic lock (replaces timestamp-only `expected_modified` check).
 - Declare `expected_version` on the admin ticket form so the hidden lock token is actually bound and submitted.
+- Accept additional ZIP MIME detections (`x-zip`, `octet-stream`, etc.) so valid `.zip` uploads are not rejected on some hosts.
 - Mail queue: UTF-8-safe subject/kind/error truncation; purge failed rows older than 30 days.
 
 ## Development history (superseded numbering)
