@@ -4,7 +4,7 @@
 
 Current manifest version:
 
-`1.0.46`
+`1.0.0`
 
 Package:
 
@@ -60,7 +60,9 @@ Confirmed from repository source only:
 - Registered portal ACL defaults for `core.create` / `core.edit` when unset
 - Staff manage/reply other users’ tickets only in administrator (portal is ownership-scoped)
 
-Last VPS-verified package: `1.0.46`.
+Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
+
+Last VPS-verified package before numbering reset: `1.0.46`. New `1.0.0` package pending VPS confirmation.
 
 ## Known Limitations
 
@@ -75,6 +77,6 @@ Last VPS-verified package: `1.0.46`.
 - Validation and build tooling follows the package manifest rather than a
   product-specific configuration file.
 - Build output belongs under `builds/` and does not overwrite an existing
-  build.
+  build. Rebuilds of the same `1.0.0` move the previous ZIP into `archive/` first.
 - The manifests require PHP `8.3.0` as the DevArt minimum.
 - Joomla 6 is the current DevArt production series.

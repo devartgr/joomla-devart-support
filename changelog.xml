@@ -3,138 +3,19 @@
     <changelog>
         <element>pkg_devartsupport</element>
         <type>package</type>
-        <version>1.0.46</version>
+        <version>1.0.0</version>
         <addition>
+            <item>Public-facing version line reset to 1.0.0 (product state matches former internal 1.0.46)</item>
             <item>Configurable private attachment folder name under the private storage root</item>
             <item>Optional attachment retention with scheduled purge (plg_task_devartsupport)</item>
             <item>Retention warning on admin and portal upload/list screens</item>
+            <item>RAR in the safe attachment file-type catalog</item>
+            <item>Registered portal menu auto-create, requester status mail, Action Log and Privacy plugins</item>
         </addition>
         <note>
             <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.45</item>
-            <item>Retention stays off until enabled in Options; purge runs via Joomla Scheduler</item>
+            <item>Pre-public: stay on 1.0.0 until the first public release is declared</item>
+            <item>Installing over former internal 1.0.x builds is supported (numbering reset)</item>
         </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.45</version>
-        <addition>
-            <item>RAR added to the safe attachment file-type catalog</item>
-        </addition>
-        <note>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.44</item>
-            <item>Existing sites: enable rar under Options → Attachments if the types list was already saved</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.44</version>
-        <addition>
-            <item>Auto-create Registered site menu item for the support portal when missing</item>
-            <item>Requester email on staff status-only changes (same Options switch as reply notify)</item>
-        </addition>
-        <note>
-            <item>Uninstall still preserves ticket data and private files by design</item>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.42</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.42</version>
-        <fix>
-            <item>Private attachment path relocates outside DOCUMENT_ROOT for subdirectory Joomla installs</item>
-        </fix>
-        <note>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.41</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.41</version>
-        <addition>
-            <item>Portal attachments with configurable allowed types and frontend enable switch</item>
-            <item>Action Log plugin plg_actionlog_devartsupport</item>
-        </addition>
-        <change>
-            <item>Full language pass for site portal and Action Log across 15 locales</item>
-        </change>
-        <note>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.38 / 1.0.40</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.38</version>
-        <addition>
-            <item>Portal owners can set priority on create and ticket view</item>
-            <item>Portal close and reopen actions for the ticket owner</item>
-        </addition>
-        <change>
-            <item>Removed Pending status; tickets are Open or Closed only (legacy pending rows migrate to open)</item>
-        </change>
-        <note>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.36 / 1.0.37</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.36</version>
-        <fix>
-            <item>Portal tickets table uses soft row separators instead of a heavy outer frame</item>
-            <item>Media asset version bumped so browsers pick up the new site.css</item>
-        </fix>
-        <note>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.34</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.34</version>
-        <fix>
-            <item>Portal guest redirect seeds com_users login form return via user state (no encoding API in extension source)</item>
-        </fix>
-        <note>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.32</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.32</version>
-        <fix>
-            <item>Package update server and changelog URLs for GitHub releases (joomla-devart-support)</item>
-            <item>Privacy plugin extends the Joomla 6 PrivacyPlugin FQCN</item>
-            <item>Attachment path/name checks renamed and filename sanitising avoids hex-escape scanner false positives</item>
-        </fix>
-        <note>
-            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Safe update from DevArt Support 1.0.31</item>
-        </note>
-    </changelog>
-    <changelog>
-        <element>pkg_devartsupport</element>
-        <type>package</type>
-        <version>1.0.31</version>
-        <addition>
-            <item>Load older messages for long ticket threads (admin and portal)</item>
-            <item>Optional author-copy email when someone posts a reply</item>
-        </addition>
-        <change>
-            <item>Removed redundant Portal badge from the administrator tickets list</item>
-        </change>
     </changelog>
 </changelogs>

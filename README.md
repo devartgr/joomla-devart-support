@@ -4,17 +4,18 @@ Ticket desk for Joomla 6 with a registered-user site portal and an administrator
 
 ![Joomla](https://img.shields.io/badge/Joomla-6.x-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.3%2B-green)
-![Release](https://img.shields.io/badge/Version-1.0.42-orange)
+![Release](https://img.shields.io/badge/Version-1.0.0-orange)
 ![License](https://img.shields.io/badge/License-GPLv3-red)
 
 ## Current Status
 
-Current VPS-verified package `1.0.42`. Versions stay on `1.0.x` until an explicit final `1.1.0` release.
+Current package version `1.0.0`. Stay on `1.0.0` until the first public release is declared.
 
 - Package `pkg_devartsupport`
 - Component `com_devartsupport`
 - Privacy plugin `plg_privacy_devartsupport`
 - Action Log plugin `plg_actionlog_devartsupport`
+- Task plugin `plg_task_devartsupport`
 - Site portal for registered users (own tickets: list, create, view, reply, priority, close/reopen)
 - Portal and administrator private attachments (configurable types; portal enable switch)
 - Statuses `open` and `closed` only
@@ -37,6 +38,7 @@ No Joomla 3/4/5 compatibility. No PHP 7.x or PHP 8.0–8.2 compatibility.
 - `com_devartsupport` — administrator staff desk and site portal
 - `plg_privacy_devartsupport` — Joomla Privacy export/remove
 - `plg_actionlog_devartsupport` — Joomla Action Log for ticket mutations
+- `plg_task_devartsupport` — scheduled purge of expired private attachments
 
 ## Languages
 

@@ -29,7 +29,7 @@ final class PlgTaskDevartsupportInstallerScript
 
     private const SEED_MARKER = 'scheduler_seeded_attachment_purge';
 
-    private const SEED_VERSION = '1.0.46';
+    private const SEED_VERSION = '1.0.0';
 
     public function install(InstallerAdapter $parent): bool
     {

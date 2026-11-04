@@ -383,7 +383,9 @@ scripts/
 ```
 
 Only `source/` contains editable source code.
-Historical ZIP checkpoints are not kept under `archive/`; that directory retains only `.gitkeep`.
+Disposable ZIPs under `builds/` and `releases/` may be moved to `archive/` when
+numbering is reset or a package is superseded. Do not edit or develop from
+`archive/` contents.
 
 
 ---
@@ -767,5 +769,8 @@ They must never modify repository files.
 - After every installable package: install and test on local Herd
   (`https://demo3.test`), then give the user a concrete VPS checklist for the
   same ZIP. Do not close the milestone until the user confirms that checklist.
-- Product versions stay on `1.0.x` until an explicit final `1.1.0` release. Do
-  not jump to `1.1.0` for intermediate milestones.
+- Product version stays on `1.0.0` until the first public release is explicitly
+  declared. Do not bump the patch/minor for intermediate pre-public changes.
+  When rebuilding the same `1.0.0`, move the previous `builds/pkg_*_v1.0.0.zip`
+  into `archive/` (timestamped name) before building so the new ZIP is not
+  overwritten in place.

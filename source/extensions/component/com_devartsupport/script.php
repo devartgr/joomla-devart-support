@@ -471,11 +471,8 @@ class Com_DevartsupportInstallerScript
             return;
         }
 
-        $needsReset = $current === '' || $current === '1.1.0' || version_compare($current, $version, '<');
-
-        if (!$needsReset) {
-            return;
-        }
+        // Always align #__schemas to the installed manifest version (supports
+        // numbering reset from internal 1.0.x builds back to 1.0.0).
 
         $delete = $db->getQuery(true)
             ->delete($db->quoteName('#__schemas'))

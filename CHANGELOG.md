@@ -12,6 +12,15 @@
 Product change history for bootstrapped repositories begins below this template
 section.
 
+## 1.0.0 — 2026-11-04
+
+- Version numbering reset: public-facing line is `1.0.0` (former internal builds were `1.0.1`–`1.0.46`).
+- Product state matches the former internal `1.0.46` package (full ticket desk).
+- Stay on `1.0.0` for further pre-public changes until the first public release is declared.
+- Old disposable ZIPs moved under `archive/`.
+
+## Development history (superseded numbering)
+
 ## 1.0.46 — 2026-11-04
 
 - Options: configurable private storage folder name (safe name under private/, with migrate).
