@@ -263,7 +263,10 @@ final class AttachmentStorage
     {
         $this->ensureDirectory();
         $destination = $this->privatePath($storedName);
-        File::upload($tmpName, $destination, false, false);
+        // Allow unsafe here: callers already enforced extension/MIME/size allowlists.
+        // Joomla isSafeFile scans ZIP/RAR contents for ".php" and rejects legitimate
+        // support packages (e.g. extension install ZIPs) if left at the default.
+        File::upload($tmpName, $destination, false, true);
     }
 
     public function deleteStoredFile(string $storedName): void

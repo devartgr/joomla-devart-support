@@ -15,10 +15,16 @@ defined('_JEXEC') or die;
 
 use Devart\Component\Devartsupport\Administrator\Service\CategoryService;
 use Devart\Component\Devartsupport\Administrator\Service\PortalTicketService;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\AttachmentStorage;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\CategoryStorage;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\MessageStorage;
+use Devart\Component\Devartsupport\Administrator\Service\Storage\TicketStorage;
 use Devart\Component\Devartsupport\Administrator\Service\TicketMailService;
 use Devart\Component\Devartsupport\Administrator\Service\TicketService;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use Joomla\Database\DatabaseInterface;
 
 final class TicketDesk
 {
@@ -37,11 +43,15 @@ final class TicketDesk
     {
         $component = self::component();
 
-        if (!method_exists($component, 'getPortalTicketService')) {
-            throw new \RuntimeException(Text::_('JERROR_AN_ERROR_HAS_OCCURRED'), 500);
+        if (method_exists($component, 'getPortalTicketService')) {
+            try {
+                return $component->getPortalTicketService();
+            } catch (\Error) {
+                // Typed property not initialised (partial upgrade / stale DI wiring).
+            }
         }
 
-        return $component->getPortalTicketService();
+        return self::buildPortalTicketService();
     }
 
     public static function categories(): CategoryService
@@ -71,5 +81,24 @@ final class TicketDesk
         }
 
         return $component;
+    }
+
+    /**
+     * Fallback when the booted site Extension lacks portal DI (stale OPcache /
+     * partial update). Uses the same wiring as site/services/provider.php.
+     */
+    private static function buildPortalTicketService(): PortalTicketService
+    {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $mailQueue = new MailQueueStorage($db);
+
+        return new PortalTicketService(
+            new TicketStorage($db),
+            new MessageStorage($db),
+            new CategoryStorage($db),
+            new AttachmentStorage($db),
+            new TicketMailService($mailQueue),
+            $mailQueue
+        );
     }
 }
