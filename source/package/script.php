@@ -61,7 +61,7 @@ final class Pkg_DevartsupportInstallerScript
         try {
             /** @var DatabaseInterface $db */
             $db = Factory::getContainer()->get(DatabaseInterface::class);
-            $query = $db->getQuery(true)
+            $query = $db->createQuery()
                 ->update($db->quoteName('#__extensions'))
                 ->set($db->quoteName('enabled') . ' = 1')
                 ->where($db->quoteName('type') . ' = ' . $db->quote('plugin'))
@@ -81,7 +81,7 @@ final class Pkg_DevartsupportInstallerScript
             $db = Factory::getContainer()->get(DatabaseInterface::class);
             $extension = 'com_devartsupport';
             $exists = (int) $db->setQuery(
-                $db->getQuery(true)
+                $db->createQuery()
                     ->select('COUNT(*)')
                     ->from($db->quoteName('#__action_logs_extensions'))
                     ->where($db->quoteName('extension') . ' = :extName')
@@ -131,7 +131,7 @@ final class Pkg_DevartsupportInstallerScript
             ['type' => 'plugin', 'element' => 'devartsupport', 'folder' => 'task', 'client_id' => 0],
         ] as $extension) {
             try {
-                $query = $db->getQuery(true)
+                $query = $db->createQuery()
                     ->select([$db->quoteName('extension_id'), $db->quoteName('manifest_cache')])
                     ->from($db->quoteName('#__extensions'))
                     ->where($db->quoteName('type') . ' = :syncType')
@@ -165,7 +165,7 @@ final class Pkg_DevartsupportInstallerScript
                     $cache['creationDate'] = $creationDate;
                 }
 
-                $update = $db->getQuery(true)
+                $update = $db->createQuery()
                     ->update($db->quoteName('#__extensions'))
                     ->set($db->quoteName('manifest_cache') . ' = :manifestCache')
                     ->where($db->quoteName('extension_id') . ' = :extensionId');

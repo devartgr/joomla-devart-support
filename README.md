@@ -9,7 +9,7 @@ Ticket desk for Joomla 6 with a registered-user site portal and an administrator
 
 ## Current Status
 
-Current package version `1.0.0`. Stay on `1.0.0` until the first public release is declared.
+Current package version `1.0.0`. Stay on `1.0.0` until the first public release is declared. See `docs/operations.md` for Cloudflare and update notes.
 
 - Package `pkg_devartsupport`
 - Component `com_devartsupport`

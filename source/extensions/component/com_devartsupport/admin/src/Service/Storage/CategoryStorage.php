@@ -31,7 +31,7 @@ final class CategoryStorage
      */
     public function list(string $search, int $limit, int $offset): array
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('title'),
@@ -52,7 +52,7 @@ final class CategoryStorage
 
     public function count(string $search): int
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('COUNT(*)')
             ->from($this->db->quoteName('#__devartsupport_categories'));
         $this->applySearch($query, $search);
@@ -66,7 +66,7 @@ final class CategoryStorage
      */
     public function options(): array
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('title'),
@@ -89,7 +89,7 @@ final class CategoryStorage
             return null;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('*')
             ->from($this->db->quoteName('#__devartsupport_categories'))
             ->where($this->db->quoteName('id') . ' = :categoryId');
@@ -100,17 +100,12 @@ final class CategoryStorage
         return $row ?: null;
     }
 
-    public function exists(int $id): bool
-    {
-        return $this->find($id) !== null;
-    }
-
     /**
      * @param array{title: string, published: int, attachments_enabled: int, ordering: int} $data
      */
     public function insert(array $data): int
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->insert($this->db->quoteName('#__devartsupport_categories'))
             ->columns($this->db->quoteName(['title', 'published', 'attachments_enabled', 'ordering']))
             ->values(':title, :published, :attachmentsEnabled, :ordering');
@@ -128,7 +123,7 @@ final class CategoryStorage
      */
     public function update(int $id, array $data): void
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_categories'))
             ->set($this->db->quoteName('title') . ' = :title')
             ->set($this->db->quoteName('published') . ' = :published')
@@ -152,7 +147,7 @@ final class CategoryStorage
             return 0;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->delete($this->db->quoteName('#__devartsupport_categories'));
         $query->where($this->whereIntegerIdsIn($query, $this->db->quoteName('id'), $ids));
         $this->db->setQuery($query)->execute();
@@ -162,7 +157,7 @@ final class CategoryStorage
 
     public function nextOrdering(): int
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('MAX(' . $this->db->quoteName('ordering') . ')')
             ->from($this->db->quoteName('#__devartsupport_categories'));
         $this->db->setQuery($query);

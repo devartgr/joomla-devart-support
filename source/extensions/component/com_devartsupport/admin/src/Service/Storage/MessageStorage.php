@@ -41,7 +41,7 @@ final class MessageStorage
     public function listForTicket(int $ticketId, int $limit = self::THREAD_PAGE): array
     {
         $limit = max(self::THREAD_PAGE, min(self::THREAD_HARD_CAP, $limit));
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('ticket_id'),
@@ -87,7 +87,7 @@ final class MessageStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('ticket_id'),
@@ -128,7 +128,7 @@ final class MessageStorage
 
         $body = '[removed]';
         $zero = 0;
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_messages'))
             ->set($this->db->quoteName('body') . ' = :anonBody')
             ->set($this->db->quoteName('user_id') . ' = :anonUser')
@@ -150,7 +150,7 @@ final class MessageStorage
 
     public function countForTicket(int $ticketId): int
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('COUNT(*)')
             ->from($this->db->quoteName('#__devartsupport_messages'))
             ->where($this->db->quoteName('ticket_id') . ' = :ticketId');
@@ -160,9 +160,27 @@ final class MessageStorage
         return (int) $this->db->loadResult();
     }
 
+    public function countByUserSince(int $userId, string $sinceSql): int
+    {
+        if ($userId < 1) {
+            return 0;
+        }
+
+        $query = $this->db->createQuery()
+            ->select('COUNT(*)')
+            ->from($this->db->quoteName('#__devartsupport_messages'))
+            ->where($this->db->quoteName('user_id') . ' = :authorId')
+            ->where($this->db->quoteName('created') . ' >= :sinceCreated');
+        $query->bind(':authorId', $userId, ParameterType::INTEGER);
+        $query->bind(':sinceCreated', $sinceSql);
+        $this->db->setQuery($query);
+
+        return (int) $this->db->loadResult();
+    }
+
     public function insert(int $ticketId, int $userId, string $body, string $created): int
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->insert($this->db->quoteName('#__devartsupport_messages'))
             ->columns($this->db->quoteName(['ticket_id', 'user_id', 'body', 'created']))
             ->values(':ticketId, :userId, :body, :created');
@@ -184,7 +202,7 @@ final class MessageStorage
             return;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->delete($this->db->quoteName('#__devartsupport_messages'));
         $query->where($this->whereIntegerIdsIn($query, $this->db->quoteName('ticket_id'), $ticketIds));
         $this->db->setQuery($query)->execute();

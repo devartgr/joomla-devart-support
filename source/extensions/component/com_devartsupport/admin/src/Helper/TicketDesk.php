@@ -52,7 +52,7 @@ final class TicketDesk
             || !method_exists($component, 'getCategoryService')
             || !method_exists($component, 'getTicketMailService')
         ) {
-            throw new \RuntimeException(Text::_('JERROR_ALERTNOAUTHOR'), 500);
+            throw new \RuntimeException(Text::_('JERROR_AN_ERROR_HAS_OCCURRED'), 500);
         }
 
         return $component;

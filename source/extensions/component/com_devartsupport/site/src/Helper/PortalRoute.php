@@ -22,6 +22,8 @@ use Joomla\CMS\Router\Route;
  */
 final class PortalRoute
 {
+    private static ?int $cachedItemId = null;
+
     public static function _(string $url): string
     {
         $itemId = self::itemId();
@@ -55,6 +57,10 @@ final class PortalRoute
 
     public static function itemId(): int
     {
+        if (self::$cachedItemId !== null) {
+            return self::$cachedItemId;
+        }
+
         $app = Factory::getApplication();
 
         try {
@@ -65,13 +71,17 @@ final class PortalRoute
                 $menu->load();
             }
         } catch (\Throwable) {
+            self::$cachedItemId = 0;
+
             return 0;
         }
 
         $active = $menu->getActive();
 
         if ($active !== null && ($active->component ?? '') === 'com_devartsupport') {
-            return (int) $active->id;
+            self::$cachedItemId = (int) $active->id;
+
+            return self::$cachedItemId;
         }
 
         $items = $menu->getItems('component', 'com_devartsupport') ?: [];
@@ -81,7 +91,9 @@ final class PortalRoute
             $view = (string) ($item->query['view'] ?? '');
 
             if ($view === 'tickets') {
-                return (int) $item->id;
+                self::$cachedItemId = (int) $item->id;
+
+                return self::$cachedItemId;
             }
 
             if ($fallback < 1) {
@@ -89,6 +101,8 @@ final class PortalRoute
             }
         }
 
-        return $fallback;
+        self::$cachedItemId = $fallback;
+
+        return self::$cachedItemId;
     }
 }

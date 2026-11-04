@@ -62,7 +62,7 @@ final class TicketStorage
         int $ownerUserId = 0,
         int $published = 1
     ): array {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('t.id'),
                 $this->db->quoteName('t.subject'),
@@ -114,7 +114,7 @@ final class TicketStorage
         int $ownerUserId = 0,
         int $published = 1
     ): int {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('COUNT(*)')
             ->from($this->db->quoteName('#__devartsupport_tickets', 't'));
         $this->applyFilters($query, $search, $status, $priority, $categoryId, $ownerUserId, $published);
@@ -123,46 +123,13 @@ final class TicketStorage
         return (int) $this->db->loadResult();
     }
 
-    /**
-     * @return array{open: int, closed: int}
-     */
-    public function countsByStatus(): array
-    {
-        $counts = ['open' => 0, 'closed' => 0];
-        $published = 1;
-        $query = $this->db->getQuery(true)
-            ->select([
-                $this->db->quoteName('status'),
-                'COUNT(*) AS ' . $this->db->quoteName('total'),
-            ])
-            ->from($this->db->quoteName('#__devartsupport_tickets'))
-            ->where($this->db->quoteName('published') . ' = :publishedCount')
-            ->group($this->db->quoteName('status'));
-        $query->bind(':publishedCount', $published, ParameterType::INTEGER);
-        $this->db->setQuery($query);
-
-        foreach ($this->db->loadObjectList() ?: [] as $row) {
-            $status = (string) ($row->status ?? '');
-            $total = (int) $row->total;
-
-            if ($status === 'closed') {
-                $counts['closed'] += $total;
-            } else {
-                // Treat open and any legacy values (e.g. pending) as open.
-                $counts['open'] += $total;
-            }
-        }
-
-        return $counts;
-    }
-
     public function find(int $id): ?object
     {
         if ($id < 1) {
             return null;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('*')
             ->from($this->db->quoteName('#__devartsupport_tickets'))
             ->where($this->db->quoteName('id') . ' = :ticketId');
@@ -171,6 +138,24 @@ final class TicketStorage
         $row = $this->db->loadObject();
 
         return $row ?: null;
+    }
+
+    public function countCreatedByUserSince(int $userId, string $sinceSql): int
+    {
+        if ($userId < 1) {
+            return 0;
+        }
+
+        $query = $this->db->createQuery()
+            ->select('COUNT(*)')
+            ->from($this->db->quoteName('#__devartsupport_tickets'))
+            ->where($this->db->quoteName('user_id') . ' = :ownerId')
+            ->where($this->db->quoteName('created') . ' >= :sinceCreated');
+        $query->bind(':ownerId', $userId, ParameterType::INTEGER);
+        $query->bind(':sinceCreated', $sinceSql);
+        $this->db->setQuery($query);
+
+        return (int) $this->db->loadResult();
     }
 
     /**
@@ -183,7 +168,7 @@ final class TicketStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('*')
             ->from($this->db->quoteName('#__devartsupport_tickets'));
         $query->where($this->whereIntegerIdsIn($query, $this->db->quoteName('id'), $ids));
@@ -210,7 +195,7 @@ final class TicketStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select($this->db->quoteName('id'))
             ->from($this->db->quoteName('#__devartsupport_tickets'));
 
@@ -250,7 +235,7 @@ final class TicketStorage
      */
     public function insert(array $data): int
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->insert($this->db->quoteName('#__devartsupport_tickets'))
             ->columns($this->db->quoteName([
                 'subject',
@@ -297,7 +282,7 @@ final class TicketStorage
             return 0;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_tickets'))
             ->set($this->db->quoteName('published') . ' = :publishedState');
         $query->bind(':publishedState', $published, ParameterType::INTEGER);
@@ -317,7 +302,7 @@ final class TicketStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select($this->db->quoteName('id'))
             ->from($this->db->quoteName('#__devartsupport_tickets'))
             ->where($this->db->quoteName('published') . ' = :filterPublishedIds');
@@ -344,7 +329,7 @@ final class TicketStorage
      */
     public function update(int $id, array $data): void
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_tickets'))
             ->set($this->db->quoteName('subject') . ' = :subject')
             ->set($this->db->quoteName('status') . ' = :status')
@@ -385,7 +370,7 @@ final class TicketStorage
             return 0;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->delete($this->db->quoteName('#__devartsupport_tickets'));
         $query->where($this->whereIntegerIdsIn($query, $this->db->quoteName('id'), $ids));
         $this->db->setQuery($query)->execute();
@@ -402,7 +387,7 @@ final class TicketStorage
             return 0;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_tickets'))
             ->set($this->db->quoteName('status') . ' = :status')
             ->set($this->db->quoteName('modified') . ' = :modified')
@@ -417,6 +402,57 @@ final class TicketStorage
     }
 
     /**
+     * Narrow update: priority + audit columns only (avoids lost updates on other fields).
+     */
+    public function updatePriority(int $id, string $priority, string $modified, int $modifiedBy): void
+    {
+        if ($id < 1) {
+            return;
+        }
+
+        $query = $this->db->createQuery()
+            ->update($this->db->quoteName('#__devartsupport_tickets'))
+            ->set($this->db->quoteName('priority') . ' = :priority')
+            ->set($this->db->quoteName('modified') . ' = :modified')
+            ->set($this->db->quoteName('modified_by') . ' = :modifiedBy')
+            ->where($this->db->quoteName('id') . ' = :ticketId');
+        $query->bind(':priority', $priority);
+        $query->bind(':modified', $modified);
+        $query->bind(':modifiedBy', $modifiedBy, ParameterType::INTEGER);
+        $query->bind(':ticketId', $id, ParameterType::INTEGER);
+        $this->db->setQuery($query)->execute();
+    }
+
+    /**
+     * Narrow update after a reply: status, audit columns, last_message_at only.
+     */
+    public function touchAfterReply(
+        int $id,
+        string $status,
+        string $modified,
+        int $modifiedBy,
+        string $lastMessageAt
+    ): void {
+        if ($id < 1) {
+            return;
+        }
+
+        $query = $this->db->createQuery()
+            ->update($this->db->quoteName('#__devartsupport_tickets'))
+            ->set($this->db->quoteName('status') . ' = :status')
+            ->set($this->db->quoteName('modified') . ' = :modified')
+            ->set($this->db->quoteName('modified_by') . ' = :modifiedBy')
+            ->set($this->db->quoteName('last_message_at') . ' = :lastMessageAt')
+            ->where($this->db->quoteName('id') . ' = :ticketId');
+        $query->bind(':status', $status);
+        $query->bind(':modified', $modified);
+        $query->bind(':modifiedBy', $modifiedBy, ParameterType::INTEGER);
+        $query->bind(':lastMessageAt', $lastMessageAt);
+        $query->bind(':ticketId', $id, ParameterType::INTEGER);
+        $this->db->setQuery($query)->execute();
+    }
+
+    /**
      * @param list<int> $categoryIds
      */
     public function clearCategory(array $categoryIds): void
@@ -426,7 +462,7 @@ final class TicketStorage
         }
 
         $zero = 0;
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_tickets'))
             ->set($this->db->quoteName('category_id') . ' = :clearedCategory');
         $query->bind(':clearedCategory', $zero, ParameterType::INTEGER);

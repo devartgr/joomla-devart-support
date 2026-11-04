@@ -125,11 +125,37 @@ final class SettingsController extends FormController
         $data = $this->input->post->get('jform', [], 'array');
         /** @var SettingsModel $model */
         $model = $this->getModel('Settings');
+        $form = $model->getForm($data, false);
+
+        if (!$form) {
+            $this->app->setUserState(SettingsModel::USER_STATE, $data);
+            $this->setRedirect(
+                Route::_('index.php?option=com_devartsupport&view=settings', false),
+                Text::_('JERROR_AN_ERROR_HAS_OCCURRED'),
+                'error'
+            );
+
+            return;
+        }
+
+        $valid = $model->validate($form, $data);
+
+        if ($valid === false) {
+            $this->app->setUserState(SettingsModel::USER_STATE, $data);
+
+            foreach ($model->getErrors() as $error) {
+                $this->app->enqueueMessage((string) $error, 'error');
+            }
+
+            $this->setRedirect(Route::_('index.php?option=com_devartsupport&view=settings', false));
+
+            return;
+        }
 
         try {
-            $model->save($data);
+            $model->save($valid);
             $this->app->setUserState(SettingsModel::USER_STATE, null);
-            $to = trim((string) ($data['email_test_recipient'] ?? ''));
+            $to = trim((string) ($valid['email_test_recipient'] ?? $data['email_test_recipient'] ?? ''));
             TicketDesk::mail()->sendTest($to);
             $this->setRedirect(
                 Route::_('index.php?option=com_devartsupport&view=settings', false),

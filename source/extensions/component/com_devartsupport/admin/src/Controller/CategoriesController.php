@@ -39,13 +39,4 @@ class CategoriesController extends BaseController
     {
         return array_values(array_filter(array_map('intval', (array) $this->input->get('cid', [], 'array'))));
     }
-
-    private function requirePermission(string $action): void
-    {
-        $user = $this->app->getIdentity();
-
-        if ($user === null || !$user->authorise($action, 'com_devartsupport')) {
-            throw new \RuntimeException(Text::_('JERROR_ALERTNOAUTHOR'), 403);
-        }
-    }
 }

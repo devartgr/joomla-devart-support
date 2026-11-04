@@ -27,16 +27,36 @@ class Com_DevartsupportInstallerScript
         }
 
         $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $this->purgeObsoleteUpdateSqlFiles();
         $this->ensureCategoriesTable($db);
         $this->ensureCategoryColumns($db);
         $this->ensureTicketColumns($db);
         $this->ensureAttachmentsTable($db);
+        $this->ensureSupportIndexes($db);
+        $this->normaliseLegacyTicketStatuses($db);
         $this->ensurePrivateAttachmentStorage();
         $this->ensureRegisteredPortalAcl($db);
         $this->ensurePortalMenuItem($db);
         $this->synchroniseSchemaVersion($db, $this->manifestVersion($parent));
 
         return true;
+    }
+
+    /**
+     * After the numbering reset, remove leftover internal update scripts that
+     * Joomla would otherwise re-run on the next schema bump.
+     */
+    private function purgeObsoleteUpdateSqlFiles(): void
+    {
+        $dir = JPATH_ADMINISTRATOR . '/components/com_devartsupport/sql/updates/mysql';
+
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob($dir . '/*.sql') ?: [] as $file) {
+            @unlink($file);
+        }
     }
 
     /**
@@ -307,6 +327,14 @@ class Com_DevartsupportInstallerScript
      */
     private function migrateLegacyPendingStatus(object $db): void
     {
+        $this->normaliseLegacyTicketStatuses($db);
+    }
+
+    /**
+     * Only open/closed remain; map any other legacy status values to open.
+     */
+    private function normaliseLegacyTicketStatuses(object $db): void
+    {
         try {
             $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
 
@@ -314,14 +342,13 @@ class Com_DevartsupportInstallerScript
                 return;
             }
 
-            $pending = 'pending';
             $open = 'open';
-            $query = $db->getQuery(true)
+            $closed = 'closed';
+            $query = $db->createQuery()
                 ->update($db->quoteName('#__devartsupport_tickets'))
                 ->set($db->quoteName('status') . ' = :openStatus')
-                ->where($db->quoteName('status') . ' = :pendingStatus');
+                ->where($db->quoteName('status') . ' NOT IN (' . $db->quote($open) . ', ' . $db->quote($closed) . ')');
             $query->bind(':openStatus', $open, ParameterType::STRING);
-            $query->bind(':pendingStatus', $pending, ParameterType::STRING);
             $db->setQuery($query)->execute();
         } catch (\Throwable) {
             // Safe to continue; rows can be corrected manually if needed.
@@ -330,7 +357,23 @@ class Com_DevartsupportInstallerScript
 
     private function ensureTicketIndex(object $db, string $index, string $column): void
     {
-        $table = $db->replacePrefix('#__devartsupport_tickets');
+        $this->ensureTableIndex($db, '#__devartsupport_tickets', $index, $column);
+    }
+
+    private function ensureSupportIndexes(object $db): void
+    {
+        try {
+            $this->ensureTableIndex($db, '#__devartsupport_messages', 'idx_user_id', 'user_id');
+            $this->ensureTableIndex($db, '#__devartsupport_attachments', 'idx_created', 'created');
+            $this->ensureTableIndex($db, '#__devartsupport_attachments', 'idx_created_by', 'created_by');
+        } catch (\Throwable) {
+            // Index creation must never block install/update.
+        }
+    }
+
+    private function ensureTableIndex(object $db, string $tableKey, string $index, string $column): void
+    {
+        $table = $db->replacePrefix($tableKey);
         $db->setQuery('SHOW INDEX FROM ' . $db->quoteName($table));
 
         foreach ($db->loadObjectList() ?: [] as $row) {
@@ -340,7 +383,7 @@ class Com_DevartsupportInstallerScript
         }
 
         $db->setQuery(
-            'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+            'ALTER TABLE ' . $db->quoteName($tableKey)
             . ' ADD KEY ' . $db->quoteName($index) . ' (' . $db->quoteName($column) . ')'
         )->execute();
     }
@@ -359,7 +402,9 @@ class Com_DevartsupportInstallerScript
             . $db->quoteName('created_by') . ' int unsigned NOT NULL DEFAULT 0,'
             . 'PRIMARY KEY (' . $db->quoteName('id') . '),'
             . 'UNIQUE KEY ' . $db->quoteName('idx_stored_name') . ' (' . $db->quoteName('stored_name') . '),'
-            . 'KEY ' . $db->quoteName('idx_ticket_id') . ' (' . $db->quoteName('ticket_id') . ')'
+            . 'KEY ' . $db->quoteName('idx_ticket_id') . ' (' . $db->quoteName('ticket_id') . '),'
+            . 'KEY ' . $db->quoteName('idx_created') . ' (' . $db->quoteName('created') . '),'
+            . 'KEY ' . $db->quoteName('idx_created_by') . ' (' . $db->quoteName('created_by') . ')'
             . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci'
         )->execute();
     }
@@ -447,7 +492,7 @@ class Com_DevartsupportInstallerScript
 
     private function synchroniseSchemaVersion(object $db, string $version): void
     {
-        $query = $db->getQuery(true)
+        $query = $db->createQuery()
             ->select($db->quoteName('extension_id'))
             ->from($db->quoteName('#__extensions'))
             ->where($db->quoteName('type') . ' = ' . $db->quote('component'))
@@ -459,7 +504,7 @@ class Com_DevartsupportInstallerScript
             return;
         }
 
-        $currentQuery = $db->getQuery(true)
+        $currentQuery = $db->createQuery()
             ->select($db->quoteName('version_id'))
             ->from($db->quoteName('#__schemas'))
             ->where($db->quoteName('extension_id') . ' = :schemaExtension');
@@ -474,13 +519,13 @@ class Com_DevartsupportInstallerScript
         // Always align #__schemas to the installed manifest version (supports
         // numbering reset from internal 1.0.x builds back to 1.0.0).
 
-        $delete = $db->getQuery(true)
+        $delete = $db->createQuery()
             ->delete($db->quoteName('#__schemas'))
             ->where($db->quoteName('extension_id') . ' = :deleteSchema');
         $delete->bind(':deleteSchema', $extensionId, ParameterType::INTEGER);
         $db->setQuery($delete)->execute();
 
-        $insert = $db->getQuery(true)
+        $insert = $db->createQuery()
             ->insert($db->quoteName('#__schemas'))
             ->columns($db->quoteName(['extension_id', 'version_id']))
             ->values(':insertExtension, :insertVersion');

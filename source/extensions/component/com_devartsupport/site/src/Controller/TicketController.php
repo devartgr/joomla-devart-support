@@ -16,6 +16,7 @@ defined('_JEXEC') or die;
 use Devart\Component\Devartsupport\Administrator\Exception\TicketNotFoundException;
 use Devart\Component\Devartsupport\Administrator\Exception\TicketValidationException;
 use Devart\Component\Devartsupport\Administrator\Helper\TicketDesk;
+use Devart\Component\Devartsupport\Administrator\Helper\UploadInput;
 use Devart\Component\Devartsupport\Administrator\Service\TicketService;
 use Devart\Component\Devartsupport\Site\Helper\PortalAccess;
 use Devart\Component\Devartsupport\Site\Helper\PortalRoute;
@@ -193,33 +194,7 @@ class TicketController extends BaseController
      */
     private function uploadedFiles(): array
     {
-        $raw = $this->input->files->get('attachments', [], 'array');
-
-        if ($raw === [] || $raw === null) {
-            return [];
-        }
-
-        if (isset($raw['name']) && !is_array($raw['name'])) {
-            return [$raw];
-        }
-
-        if (isset($raw['name']) && is_array($raw['name'])) {
-            $files = [];
-
-            foreach (array_keys($raw['name']) as $index) {
-                $files[] = [
-                    'name'     => $raw['name'][$index] ?? '',
-                    'type'     => $raw['type'][$index] ?? '',
-                    'tmp_name' => $raw['tmp_name'][$index] ?? '',
-                    'error'    => $raw['error'][$index] ?? \UPLOAD_ERR_NO_FILE,
-                    'size'     => $raw['size'][$index] ?? 0,
-                ];
-            }
-
-            return $files;
-        }
-
-        return array_values(array_filter($raw, static fn(mixed $row): bool => is_array($row)));
+        return UploadInput::attachments($this->input->files->get('attachments', [], 'array'));
     }
 
     private function contentDispositionHeader(string $disposition, string $filename): string

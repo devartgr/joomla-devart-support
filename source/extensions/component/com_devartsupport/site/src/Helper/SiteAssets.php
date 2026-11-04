@@ -30,9 +30,6 @@ final class SiteAssets
         $wa->getRegistry()->addExtensionRegistryFile('com_devartsupport');
         $wa->useStyle('com_devartsupport.site');
         $wa->useScript('com_devartsupport.site');
-
-        $theme = PortalFrontSettings::theme();
-        $document->addScriptOptions('com_devartsupport.portal', ['theme' => $theme]);
     }
 
     public static function themeClass(): string

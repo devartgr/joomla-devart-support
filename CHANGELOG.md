@@ -18,6 +18,7 @@ section.
 - Product state matches the former internal `1.0.46` package (full ticket desk).
 - Stay on `1.0.0` for further pre-public changes until the first public release is declared.
 - Old disposable ZIPs moved under `archive/`.
+- Pre-public hardening: remove stale SQL update scripts; add messages/attachments indexes; normalise legacy statuses; narrow portal field updates; MIME tighten (octet-stream only for RAR); batched attachment purge; migrate storage only on install/update; portal create/reply rate limits; `createQuery()`; dead-code cleanup; Cloudflare/versioning ops docs.
 
 ## Development history (superseded numbering)
 

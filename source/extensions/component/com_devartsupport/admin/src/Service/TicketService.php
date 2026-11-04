@@ -62,6 +62,12 @@ final class TicketService
     private const DEFAULT_LIMIT = 50;
     private const MAX_LIMIT = 100;
 
+    /** Portal flood control: new tickets per user per rolling hour. */
+    private const PORTAL_CREATE_HOURLY_CAP = 10;
+
+    /** Portal flood control: replies per user per rolling hour. */
+    private const PORTAL_REPLY_HOURLY_CAP = 30;
+
     public function __construct(
         private readonly TicketStorage $tickets,
         private readonly MessageStorage $messages,
@@ -140,11 +146,6 @@ final class TicketService
     /**
      * @return array{open: int, closed: int}
      */
-    public function countsByStatus(): array
-    {
-        return $this->tickets->countsByStatus();
-    }
-
     /**
      * @return array{
      *     ticket: object,
@@ -259,6 +260,8 @@ final class TicketService
             throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_ATTACHMENT_DISABLED');
         }
 
+        $this->assertPortalCreateAllowed($ownerUserId);
+
         return $this->create($input, $ownerUserId, $uploads);
     }
 
@@ -284,18 +287,7 @@ final class TicketService
         }
 
         $now = $this->now();
-        $this->tickets->update($id, [
-            'subject'         => (string) $existing->subject,
-            'status'          => $status,
-            'category_id'     => (int) $existing->category_id,
-            'priority'        => (string) ($existing->priority ?? self::PRIORITY_NORMAL),
-            'user_id'         => (int) $existing->user_id,
-            'requester_name'  => (string) $existing->requester_name,
-            'requester_email' => (string) $existing->requester_email,
-            'modified'        => $now,
-            'modified_by'     => $ownerUserId,
-            'last_message_at' => (string) ($existing->last_message_at ?? $now),
-        ]);
+        $this->tickets->updateStatus([$id], $status, $now, $ownerUserId);
 
         $updated = $this->tickets->find($id);
 
@@ -325,18 +317,7 @@ final class TicketService
         }
 
         $now = $this->now();
-        $this->tickets->update($id, [
-            'subject'         => (string) $existing->subject,
-            'status'          => (string) $existing->status,
-            'category_id'     => (int) $existing->category_id,
-            'priority'        => $priority,
-            'user_id'         => (int) $existing->user_id,
-            'requester_name'  => (string) $existing->requester_name,
-            'requester_email' => (string) $existing->requester_email,
-            'modified'        => $now,
-            'modified_by'     => $ownerUserId,
-            'last_message_at' => (string) ($existing->last_message_at ?? $now),
-        ]);
+        $this->tickets->updatePriority($id, $priority, $now, $ownerUserId);
 
         TicketActionLog::log('priority_changed', $id, (string) $existing->subject, [
             'priority' => $priority,
@@ -361,6 +342,8 @@ final class TicketService
             throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_ATTACHMENT_DISABLED');
         }
 
+        $this->assertPortalReplyAllowed($ownerUserId);
+
         $reply = $this->normaliseBody($reply, true);
         $files = $this->normaliseUploads($uploads, (int) $existing->category_id);
         $now = $this->now();
@@ -377,18 +360,7 @@ final class TicketService
         try {
             $this->messages->insert($id, $ownerUserId, $reply, $now);
             $storedNames = $this->storeUploads($id, $files, $now, $ownerUserId);
-            $this->tickets->update($id, [
-                'subject'         => (string) $existing->subject,
-                'status'          => $status,
-                'category_id'     => (int) $existing->category_id,
-                'priority'        => (string) ($existing->priority ?? self::PRIORITY_NORMAL),
-                'user_id'         => (int) $existing->user_id,
-                'requester_name'  => (string) $existing->requester_name,
-                'requester_email' => (string) $existing->requester_email,
-                'modified'        => $now,
-                'modified_by'     => $ownerUserId,
-                'last_message_at' => $now,
-            ]);
+            $this->tickets->touchAfterReply($id, $status, $now, $ownerUserId, $now);
             $this->tickets->transactionCommit();
         } catch (\Throwable $error) {
             $this->tickets->transactionRollback();
@@ -899,10 +871,12 @@ final class TicketService
 
         $mime = (string) $attachment->mime;
 
+        $bytes = filesize($path);
+
         return [
             'filename'    => (string) $attachment->filename,
             'mime'        => $mime,
-            'size'        => (int) filesize($path),
+            'size'        => $bytes === false ? 0 : (int) $bytes,
             'path'        => $path,
             'disposition' => 'attachment',
         ];
@@ -1152,6 +1126,24 @@ final class TicketService
         }
 
         return array_values($clean);
+    }
+
+    private function assertPortalCreateAllowed(int $ownerUserId): void
+    {
+        $since = (new Date('now -1 hour'))->toSql();
+
+        if ($this->tickets->countCreatedByUserSince($ownerUserId, $since) >= self::PORTAL_CREATE_HOURLY_CAP) {
+            throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_PORTAL_RATE_LIMIT');
+        }
+    }
+
+    private function assertPortalReplyAllowed(int $ownerUserId): void
+    {
+        $since = (new Date('now -1 hour'))->toSql();
+
+        if ($this->messages->countByUserSince($ownerUserId, $since) >= self::PORTAL_REPLY_HOURLY_CAP) {
+            throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_PORTAL_RATE_LIMIT');
+        }
     }
 
     private function now(): string

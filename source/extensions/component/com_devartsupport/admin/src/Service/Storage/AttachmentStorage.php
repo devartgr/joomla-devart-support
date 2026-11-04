@@ -44,7 +44,7 @@ final class AttachmentStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('ticket_id'),
@@ -86,7 +86,7 @@ final class AttachmentStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('ticket_id'),
@@ -129,7 +129,7 @@ final class AttachmentStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('stored_name'),
@@ -155,7 +155,7 @@ final class AttachmentStorage
             return null;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select('*')
             ->from($this->db->quoteName('#__devartsupport_attachments'))
             ->where($this->db->quoteName('id') . ' = :attachmentId');
@@ -179,7 +179,7 @@ final class AttachmentStorage
      */
     public function insert(array $data): int
     {
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->insert($this->db->quoteName('#__devartsupport_attachments'))
             ->columns($this->db->quoteName([
                 'ticket_id',
@@ -212,7 +212,7 @@ final class AttachmentStorage
             return 0;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->delete($this->db->quoteName('#__devartsupport_attachments'));
         $query->where($this->whereIntegerIdsIn($query, $this->db->quoteName('id'), $ids));
         $this->db->setQuery($query)->execute();
@@ -230,7 +230,7 @@ final class AttachmentStorage
             return [];
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->select([
                 $this->db->quoteName('id'),
                 $this->db->quoteName('stored_name'),
@@ -251,7 +251,7 @@ final class AttachmentStorage
             return 0;
         }
 
-        $query = $this->db->getQuery(true)
+        $query = $this->db->createQuery()
             ->delete($this->db->quoteName('#__devartsupport_attachments'));
         $query->where($this->whereIntegerIdsIn($query, $this->db->quoteName('ticket_id'), $ticketIds));
         $this->db->setQuery($query)->execute();
@@ -295,54 +295,58 @@ final class AttachmentStorage
         PrivateAttachmentPath::ensureDirectory();
     }
 
-    public function directory(): string
-    {
-        return PrivateAttachmentPath::directory();
-    }
-
-    public function migrateLegacyFiles(): int
-    {
-        return PrivateAttachmentPath::migrateLegacyFiles();
-    }
-
     /**
      * Delete attachment rows and private files older than $days (based on created).
+     * Processes in bounded batches so Scheduler runs stay within memory/time limits.
      */
     public function purgeOlderThanDays(int $days): int
     {
         $days = max(1, $days);
         $cutoff = gmdate('Y-m-d H:i:s', time() - ($days * 86400));
+        $batchSize = 500;
+        $maxBatches = 20;
+        $removed = 0;
 
-        $query = $this->db->getQuery(true)
-            ->select([
-                $this->db->quoteName('id'),
-                $this->db->quoteName('stored_name'),
-            ])
-            ->from($this->db->quoteName('#__devartsupport_attachments'))
-            ->where($this->db->quoteName('created') . ' < :cutoff')
-            ->bind(':cutoff', $cutoff);
-        $this->db->setQuery($query);
-        $rows = array_values($this->db->loadObjectList() ?: []);
+        for ($batch = 0; $batch < $maxBatches; $batch++) {
+            $query = $this->db->createQuery()
+                ->select([
+                    $this->db->quoteName('id'),
+                    $this->db->quoteName('stored_name'),
+                ])
+                ->from($this->db->quoteName('#__devartsupport_attachments'))
+                ->where($this->db->quoteName('created') . ' < :cutoff')
+                ->order($this->db->quoteName('id') . ' ASC')
+                ->bind(':cutoff', $cutoff)
+                ->setLimit($batchSize);
+            $this->db->setQuery($query);
+            $rows = array_values($this->db->loadObjectList() ?: []);
 
-        if ($rows === []) {
-            return 0;
+            if ($rows === []) {
+                break;
+            }
+
+            $ids = [];
+            $stored = [];
+
+            foreach ($rows as $row) {
+                $ids[] = (int) $row->id;
+                $stored[] = (string) $row->stored_name;
+            }
+
+            $this->delete($ids);
+
+            foreach ($stored as $storedName) {
+                $this->deleteStoredFile($storedName);
+            }
+
+            $removed += count($ids);
+
+            if (count($rows) < $batchSize) {
+                break;
+            }
         }
 
-        $ids = [];
-        $stored = [];
-
-        foreach ($rows as $row) {
-            $ids[] = (int) $row->id;
-            $stored[] = (string) $row->stored_name;
-        }
-
-        $this->delete($ids);
-
-        foreach ($stored as $storedName) {
-            $this->deleteStoredFile($storedName);
-        }
-
-        return count($ids);
+        return $removed;
     }
 
     /**

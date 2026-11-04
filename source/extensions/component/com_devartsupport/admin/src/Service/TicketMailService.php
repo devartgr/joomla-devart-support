@@ -19,6 +19,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Mail\MailerFactoryInterface;
 use Joomla\CMS\Mail\MailHelper;
+use Joomla\CMS\User\UserFactoryInterface;
 
 /**
  * Staff notification emails for ticket events.
@@ -148,7 +149,7 @@ final class TicketMailService
 
     private function dispatchRequester(object $ticket, string $subject, string $body): void
     {
-        $to = strtolower(trim((string) ($ticket->requester_email ?? '')));
+        $to = $this->resolveRequesterAddress($ticket);
 
         if ($to === '' || !MailHelper::isEmailAddress($to)) {
             return;
@@ -159,6 +160,29 @@ final class TicketMailService
         } catch (\Throwable $error) {
             $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
         }
+    }
+
+    /**
+     * Prefer the live Joomla account email when the ticket has a user_id.
+     */
+    private function resolveRequesterAddress(object $ticket): string
+    {
+        $userId = (int) ($ticket->user_id ?? 0);
+
+        if ($userId > 0) {
+            try {
+                $user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($userId);
+                $live = strtolower(trim((string) ($user->email ?? '')));
+
+                if ($live !== '' && MailHelper::isEmailAddress($live)) {
+                    return $live;
+                }
+            } catch (\Throwable) {
+                // Fall back to stored requester_email.
+            }
+        }
+
+        return strtolower(trim((string) ($ticket->requester_email ?? '')));
     }
 
     /**
@@ -293,7 +317,14 @@ final class TicketMailService
     private function warn(string $message): void
     {
         try {
-            Factory::getApplication()->enqueueMessage($message, 'warning');
+            $app = Factory::getApplication();
+
+            // Site clients must not see SMTP/host details from exception text.
+            if (!$app->isClient('administrator')) {
+                $message = Text::_('COM_DEVARTSUPPORT_MAIL_SEND_FAILED');
+            }
+
+            $app->enqueueMessage($message, 'warning');
         } catch (\Throwable) {
             // Never block the ticket workflow.
         }

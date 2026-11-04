@@ -145,7 +145,7 @@ final class SettingsModel extends FormModel
         $element = 'com_devartsupport';
         $type = 'component';
 
-        $query = $db->getQuery(true)
+        $query = $db->createQuery()
             ->update($db->quoteName('#__extensions'))
             ->set($db->quoteName('custom_data') . ' = :custom')
             ->set($db->quoteName('params') . ' = :params')

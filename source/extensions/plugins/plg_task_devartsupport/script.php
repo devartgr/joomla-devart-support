@@ -66,7 +66,7 @@ final class PlgTaskDevartsupportInstallerScript
         try {
             $db = Factory::getContainer()->get(DatabaseInterface::class);
             $db->setQuery(
-                $db->getQuery(true)
+                $db->createQuery()
                     ->update($db->quoteName('#__extensions'))
                     ->set($db->quoteName('enabled') . ' = 1')
                     ->where($db->quoteName('type') . ' = ' . $db->quote('plugin'))
@@ -89,7 +89,7 @@ final class PlgTaskDevartsupportInstallerScript
 
             $routineId = self::ROUTINE_ID;
             $existingId = (int) $db->setQuery(
-                $db->getQuery(true)
+                $db->createQuery()
                     ->select($db->quoteName('id'))
                     ->from($db->quoteName('#__scheduler_tasks'))
                     ->where($db->quoteName('type') . ' = :routineType')
@@ -134,7 +134,7 @@ final class PlgTaskDevartsupportInstallerScript
             }
 
             $now = (new Date('now'))->toSql();
-            $insert = $db->getQuery(true)
+            $insert = $db->createQuery()
                 ->insert($db->quoteName('#__scheduler_tasks'))
                 ->columns($db->quoteName([
                     'asset_id',
@@ -204,7 +204,7 @@ final class PlgTaskDevartsupportInstallerScript
         }
 
         $db->setQuery(
-            $db->getQuery(true)
+            $db->createQuery()
                 ->update($db->quoteName('#__extensions'))
                 ->set($db->quoteName('params') . ' = ' . $db->quote($encoded))
                 ->where($db->quoteName('type') . ' = ' . $db->quote('component'))
@@ -218,7 +218,7 @@ final class PlgTaskDevartsupportInstallerScript
     private function readComponentParams(DatabaseInterface $db): array
     {
         $raw = (string) $db->setQuery(
-            $db->getQuery(true)
+            $db->createQuery()
                 ->select($db->quoteName('params'))
                 ->from($db->quoteName('#__extensions'))
                 ->where($db->quoteName('type') . ' = ' . $db->quote('component'))

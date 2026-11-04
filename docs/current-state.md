@@ -62,7 +62,9 @@ Confirmed from repository source only:
 
 Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
 
-Last VPS-verified package before numbering reset: `1.0.46`. New `1.0.0` package pending VPS confirmation.
+Last VPS-verified package before numbering reset: `1.0.46`. Hardened `1.0.0` package pending VPS confirmation.
+
+See `docs/operations.md` for Cloudflare bypass, versioning, and Scheduler notes.
 
 ## Known Limitations
 

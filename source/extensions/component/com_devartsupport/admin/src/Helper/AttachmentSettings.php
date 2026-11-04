@@ -49,18 +49,18 @@ final class AttachmentSettings
 
     /** @var array<string, list<string>> */
     public const ALLOWED_DETECTED_MIMES = [
-        'csv'  => ['text/csv', 'text/plain', 'application/csv', 'application/octet-stream'],
-        'doc'  => ['application/msword', 'application/octet-stream'],
+        'csv'  => ['text/csv', 'text/plain', 'application/csv'],
+        'doc'  => ['application/msword', 'application/CDFV2'],
         'docx' => [
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/zip',
-            'application/octet-stream',
         ],
         'gif'  => ['image/gif'],
         'jpeg' => ['image/jpeg'],
         'jpg'  => ['image/jpeg'],
         'pdf'  => ['application/pdf'],
         'png'  => ['image/png'],
+        // finfo often fails on RAR; octet-stream kept only here.
         'rar'  => [
             'application/vnd.rar',
             'application/x-rar-compressed',
@@ -69,11 +69,10 @@ final class AttachmentSettings
         ],
         'txt'  => ['text/plain', 'text/csv'],
         'webp' => ['image/webp'],
-        'xls'  => ['application/vnd.ms-excel', 'application/octet-stream'],
+        'xls'  => ['application/vnd.ms-excel', 'application/CDFV2'],
         'xlsx' => [
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'application/zip',
-            'application/octet-stream',
         ],
         'zip'  => ['application/zip', 'application/x-zip-compressed'],
     ];

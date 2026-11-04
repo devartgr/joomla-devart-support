@@ -77,7 +77,6 @@ final class PrivateAttachmentPath
 
         self::ensureOutsideWebRoot($directory);
         self::writeDenyFiles($directory);
-        self::migrateFromRelocatedPaths($directory);
     }
 
     public static function migrateLegacyFiles(): int
@@ -87,12 +86,14 @@ final class PrivateAttachmentPath
 
         if (!is_dir($legacy)) {
             self::ensureDirectory();
+            self::migrateFromRelocatedPaths($target);
 
             return 0;
         }
 
         self::ensureDirectory();
         $moved = self::moveAttachmentFiles($legacy, $target);
+        self::migrateFromRelocatedPaths($target);
 
         if (self::legacyHasNoAttachments($legacy)) {
             self::deleteDirectoryTree($legacy);

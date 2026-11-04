@@ -12,10 +12,14 @@
             <item>RAR in the safe attachment file-type catalog</item>
             <item>Registered portal menu auto-create, requester status mail, Action Log and Privacy plugins</item>
         </addition>
+        <change>
+            <item>Pre-public hardening: schema update cleanup, indexes, portal concurrency-safe writes, MIME and purge limits, rate limits, createQuery</item>
+        </change>
         <note>
             <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
             <item>Pre-public: stay on 1.0.0 until the first public release is declared</item>
             <item>Installing over former internal 1.0.x builds is supported (numbering reset)</item>
+            <item>Sites on former internal 1.0.46 must install this ZIP manually</item>
         </note>
     </changelog>
 </changelogs>

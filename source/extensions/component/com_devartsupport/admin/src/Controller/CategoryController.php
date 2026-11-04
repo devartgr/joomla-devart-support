@@ -89,13 +89,4 @@ class CategoryController extends BaseController
 
         $this->setRedirect(Route::_('index.php?option=com_devartsupport&view=categories', false));
     }
-
-    private function requirePermission(string $action): void
-    {
-        $user = $this->app->getIdentity();
-
-        if ($user === null || !$user->authorise($action, 'com_devartsupport')) {
-            throw new \RuntimeException(Text::_('JERROR_ALERTNOAUTHOR'), 403);
-        }
-    }
 }
