@@ -21,6 +21,11 @@ section.
 - Pre-public hardening: remove stale SQL update scripts; add messages/attachments indexes; normalise legacy statuses; narrow portal field updates; MIME tighten (octet-stream only for RAR); batched attachment purge; migrate storage only on install/update; portal create/reply rate limits; `createQuery()`; dead-code cleanup; Cloudflare/versioning ops docs.
 - Author-copy email applies only to portal user replies (not administrator staff replies).
 - Installer preflight purges leftover internal SQL update scripts so numbering-reset sites do not re-run `ALTER ADD` (e.g. duplicate `category_id`).
+- Installer postflight no longer wipes packaged SQL migrations (safe for future `1.0.1.sql`).
+- Attachment retention purge deletes private files before DB rows; failed file deletes keep the row for retry.
+- Portal reply reopen uses SQL `IF(status=closed)` so concurrent staff status changes are not overwritten.
+- Admin ticket save rejects stale forms via `expected_modified`.
+- Configurable portal rate limits in Options (create/reply hourly caps).
 
 ## Development history (superseded numbering)
 

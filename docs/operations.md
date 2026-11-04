@@ -5,7 +5,7 @@
 - Public-facing package version is `1.0.0`.
 - Internal builds formerly numbered `1.0.1`–`1.0.46` were development-only.
 - Sites that still show those internal versions must install the current ZIP manually; Joomla’s update server will not offer a lower version number as an upgrade.
-- The installer preflight deletes leftover `administrator/components/com_devartsupport/sql/updates/mysql/*.sql` files before schema updates run, so old `ALTER ADD` scripts cannot fire against an already-migrated database.
+- The installer **preflight** deletes leftover `administrator/components/com_devartsupport/sql/updates/mysql/*.sql` files before the new package is copied, so old internal `ALTER ADD` scripts cannot fire against an already-migrated database. Postflight does **not** wipe packaged migrations (e.g. future `1.0.1.sql`).
 - Stay on `1.0.0` until the first public release is explicitly declared. Rebuilds of the same version move the previous `builds/` ZIP into `archive/` first.
 
 ## Cloudflare / Full Page Cache
@@ -25,6 +25,12 @@ VPS QA checklist: with cache ON, two different logged-in users must not see each
 Plugin `plg_task_devartsupport` seeds one daily Scheduler task (`devartsupport.purge_attachments`) on install/update.
 
 Component params may contain the internal marker `scheduler_seeded_attachment_purge` so the task is not duplicated. Retention stays off until enabled under Options → Attachments.
+
+Purge deletes private files first; database rows are removed only after the file is gone (or was already missing). Failed file deletes leave the row for the next run.
+
+## Portal rate limits
+
+Options → Frontend: `portal_create_hourly_cap` (default 10, range 1–100) and `portal_reply_hourly_cap` (default 30, range 1–300) per logged-in portal user per rolling hour.
 
 ## Uninstall SQL
 

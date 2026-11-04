@@ -45,7 +45,8 @@ class Com_DevartsupportInstallerScript
         }
 
         $db = Factory::getContainer()->get(DatabaseInterface::class);
-        $this->purgeObsoleteUpdateSqlFiles();
+        // Do not purge update SQL here: packaged migrations must remain after
+        // parseSchemaUpdates. Leftovers are cleared in preflight before copy.
         $this->ensureCategoriesTable($db);
         $this->ensureCategoryColumns($db);
         $this->ensureTicketColumns($db);
@@ -61,8 +62,8 @@ class Com_DevartsupportInstallerScript
     }
 
     /**
-     * Remove leftover update scripts from the installed component tree.
-     * Schema changes after the numbering reset are applied idempotently in postflight.
+     * Remove leftover update scripts from the installed component tree before
+     * the new package files are copied. Idempotent schema work runs in postflight.
      */
     private function purgeObsoleteUpdateSqlFiles(): void
     {

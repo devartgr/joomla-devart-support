@@ -16,6 +16,7 @@ defined('_JEXEC') or die;
 use Devart\Component\Devartsupport\Administrator\Exception\TicketNotFoundException;
 use Devart\Component\Devartsupport\Administrator\Exception\TicketValidationException;
 use Devart\Component\Devartsupport\Administrator\Helper\AttachmentSettings;
+use Devart\Component\Devartsupport\Administrator\Helper\PortalRateLimits;
 use Devart\Component\Devartsupport\Administrator\Helper\TicketActionLog;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\AttachmentStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\CategoryStorage;
@@ -61,12 +62,6 @@ final class TicketService
     private const MAX_SEARCH = 200;
     private const DEFAULT_LIMIT = 50;
     private const MAX_LIMIT = 100;
-
-    /** Portal flood control: new tickets per user per rolling hour. */
-    private const PORTAL_CREATE_HOURLY_CAP = 10;
-
-    /** Portal flood control: replies per user per rolling hour. */
-    private const PORTAL_REPLY_HOURLY_CAP = 30;
 
     public function __construct(
         private readonly TicketStorage $tickets,
@@ -347,12 +342,7 @@ final class TicketService
         $reply = $this->normaliseBody($reply, true);
         $files = $this->normaliseUploads($uploads, (int) $existing->category_id);
         $now = $this->now();
-        $status = (string) $existing->status;
-
-        // Owner reply reopens a closed ticket.
-        if ($status === self::STATUS_CLOSED) {
-            $status = self::STATUS_OPEN;
-        }
+        $previousStatus = (string) $existing->status;
 
         $storedNames = [];
         $this->tickets->transactionStart();
@@ -360,7 +350,8 @@ final class TicketService
         try {
             $this->messages->insert($id, $ownerUserId, $reply, $now);
             $storedNames = $this->storeUploads($id, $files, $now, $ownerUserId);
-            $this->tickets->touchAfterReply($id, $status, $now, $ownerUserId, $now);
+            // Reopen only if still closed; never overwrite with a stale pre-txn status.
+            $this->tickets->touchAfterReply($id, $now, $ownerUserId, $now);
             $this->tickets->transactionCommit();
         } catch (\Throwable $error) {
             $this->tickets->transactionRollback();
@@ -380,8 +371,8 @@ final class TicketService
 
             $this->mail->notifyAuthorCopy($updated, $reply, $authorEmail);
 
-            if ($status !== (string) $existing->status) {
-                $this->mail->notifyStatusChange($updated, (string) $existing->status, $status);
+            if ($previousStatus !== (string) $updated->status) {
+                $this->mail->notifyStatusChange($updated, $previousStatus, (string) $updated->status);
             }
 
             TicketActionLog::log('replied', $id, (string) $updated->subject, ['channel' => 'portal']);
@@ -488,6 +479,13 @@ final class TicketService
 
         if ($existing === null) {
             throw new TicketNotFoundException('COM_DEVARTSUPPORT_ERROR_NOT_FOUND');
+        }
+
+        $expectedModified = trim((string) ($input['expected_modified'] ?? ''));
+        $liveModified = trim((string) ($existing->modified ?? ''));
+
+        if ($expectedModified === '' || $expectedModified !== $liveModified) {
+            throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_TICKET_STALE');
         }
 
         $now = $this->now();
@@ -1136,7 +1134,7 @@ final class TicketService
     {
         $since = (new Date('now -1 hour'))->toSql();
 
-        if ($this->tickets->countCreatedByUserSince($ownerUserId, $since) >= self::PORTAL_CREATE_HOURLY_CAP) {
+        if ($this->tickets->countCreatedByUserSince($ownerUserId, $since) >= PortalRateLimits::createHourlyCap()) {
             throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_PORTAL_RATE_LIMIT');
         }
     }
@@ -1145,7 +1143,7 @@ final class TicketService
     {
         $since = (new Date('now -1 hour'))->toSql();
 
-        if ($this->messages->countByUserSince($ownerUserId, $since) >= self::PORTAL_REPLY_HOURLY_CAP) {
+        if ($this->messages->countByUserSince($ownerUserId, $since) >= PortalRateLimits::replyHourlyCap()) {
             throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_PORTAL_RATE_LIMIT');
         }
     }

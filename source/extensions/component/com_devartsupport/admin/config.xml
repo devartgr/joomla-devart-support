@@ -151,6 +151,28 @@
             <option value="Y-m-d H:i">COM_DEVARTSUPPORT_DATE_FORMAT_YMD_HI</option>
             <option value="d.m.Y H:i">COM_DEVARTSUPPORT_DATE_FORMAT_DOT_HI</option>
         </field>
+        <field
+            name="portal_create_hourly_cap"
+            type="number"
+            default="10"
+            min="1"
+            max="100"
+            step="1"
+            filter="integer"
+            label="COM_DEVARTSUPPORT_CONFIG_PORTAL_CREATE_CAP"
+            description="COM_DEVARTSUPPORT_CONFIG_PORTAL_CREATE_CAP_DESC"
+        />
+        <field
+            name="portal_reply_hourly_cap"
+            type="number"
+            default="30"
+            min="1"
+            max="300"
+            step="1"
+            filter="integer"
+            label="COM_DEVARTSUPPORT_CONFIG_PORTAL_REPLY_CAP"
+            description="COM_DEVARTSUPPORT_CONFIG_PORTAL_REPLY_CAP_DESC"
+        />
     </fieldset>
     <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL">
         <field

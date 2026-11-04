@@ -424,11 +424,12 @@ final class TicketStorage
     }
 
     /**
-     * Narrow update after a reply: status, audit columns, last_message_at only.
+     * Narrow update after a portal reply: reopen only when currently closed,
+     * plus audit columns and last_message_at. Avoids overwriting a concurrent
+     * staff status change with a stale portal-read status.
      */
     public function touchAfterReply(
         int $id,
-        string $status,
         string $modified,
         int $modifiedBy,
         string $lastMessageAt
@@ -437,14 +438,21 @@ final class TicketStorage
             return;
         }
 
+        $closed = 'closed';
+        $open = 'open';
         $query = $this->db->createQuery()
             ->update($this->db->quoteName('#__devartsupport_tickets'))
-            ->set($this->db->quoteName('status') . ' = :status')
+            ->set(
+                $this->db->quoteName('status') . ' = IF('
+                . $this->db->quoteName('status') . ' = :closedStatus, :openStatus, '
+                . $this->db->quoteName('status') . ')'
+            )
             ->set($this->db->quoteName('modified') . ' = :modified')
             ->set($this->db->quoteName('modified_by') . ' = :modifiedBy')
             ->set($this->db->quoteName('last_message_at') . ' = :lastMessageAt')
             ->where($this->db->quoteName('id') . ' = :ticketId');
-        $query->bind(':status', $status);
+        $query->bind(':closedStatus', $closed);
+        $query->bind(':openStatus', $open);
         $query->bind(':modified', $modified);
         $query->bind(':modifiedBy', $modifiedBy, ParameterType::INTEGER);
         $query->bind(':lastMessageAt', $lastMessageAt);

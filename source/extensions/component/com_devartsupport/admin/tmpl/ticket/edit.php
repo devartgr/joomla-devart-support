@@ -127,6 +127,13 @@ $attachmentFlags = [
     </div>
 
     <input type="hidden" name="task" value="">
+    <?php if (!$this->isNew) : ?>
+        <input
+            type="hidden"
+            name="jform[expected_modified]"
+            value="<?php echo $escape((string) $this->form->getValue('expected_modified')); ?>"
+        >
+    <?php endif; ?>
     <?php echo HTMLHelper::_('form.token'); ?>
 </form>
 <?php if ($this->attachments !== []) : ?>

@@ -268,15 +268,46 @@ final class AttachmentStorage
 
     public function deleteStoredFile(string $storedName): void
     {
+        $this->tryDeleteStoredFile($storedName);
+    }
+
+    /**
+     * Delete private file copies for a stored name.
+     *
+     * @return bool True when no candidate file remains on disk.
+     */
+    public function tryDeleteStoredFile(string $storedName): bool
+    {
         try {
             foreach ($this->candidatePaths($storedName) as $path) {
-                if (is_file($path)) {
-                    File::delete($path);
+                if (!is_file($path)) {
+                    continue;
+                }
+
+                if (!File::delete($path) && is_file($path)) {
+                    return false;
                 }
             }
         } catch (\Throwable) {
-            // Never block ticket purge when private storage is unavailable.
+            return $this->storedFileAbsent($storedName);
         }
+
+        return $this->storedFileAbsent($storedName);
+    }
+
+    private function storedFileAbsent(string $storedName): bool
+    {
+        try {
+            foreach ($this->candidatePaths($storedName) as $path) {
+                if (is_file($path)) {
+                    return false;
+                }
+            }
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
     }
 
     public function absolutePath(string $storedName): string
@@ -306,6 +337,7 @@ final class AttachmentStorage
         $batchSize = 500;
         $maxBatches = 20;
         $removed = 0;
+        $afterId = 0;
 
         for ($batch = 0; $batch < $maxBatches; $batch++) {
             $query = $this->db->createQuery()
@@ -315,8 +347,10 @@ final class AttachmentStorage
                 ])
                 ->from($this->db->quoteName('#__devartsupport_attachments'))
                 ->where($this->db->quoteName('created') . ' < :cutoff')
+                ->where($this->db->quoteName('id') . ' > :afterId')
                 ->order($this->db->quoteName('id') . ' ASC')
                 ->bind(':cutoff', $cutoff)
+                ->bind(':afterId', $afterId, ParameterType::INTEGER)
                 ->setLimit($batchSize);
             $this->db->setQuery($query);
             $rows = array_values($this->db->loadObjectList() ?: []);
@@ -326,20 +360,23 @@ final class AttachmentStorage
             }
 
             $ids = [];
-            $stored = [];
 
             foreach ($rows as $row) {
-                $ids[] = (int) $row->id;
-                $stored[] = (string) $row->stored_name;
+                $id = (int) $row->id;
+                $afterId = $id;
+                $storedName = (string) $row->stored_name;
+
+                // Remove the private file first. Keep the DB row when deletion
+                // fails so the next Scheduler run can retry the same attachment.
+                if ($this->tryDeleteStoredFile($storedName)) {
+                    $ids[] = $id;
+                }
             }
 
-            $this->delete($ids);
-
-            foreach ($stored as $storedName) {
-                $this->deleteStoredFile($storedName);
+            if ($ids !== []) {
+                $this->delete($ids);
+                $removed += count($ids);
             }
-
-            $removed += count($ids);
 
             if (count($rows) < $batchSize) {
                 break;

@@ -54,6 +54,8 @@ Confirmed from repository source only:
 - Bulk status updates without N+1 ticket loads; list indexes for category/status filters
 - Ticket threads load in pages (100, expandable to 1000) with Load older messages
 - Optional author-copy email of a portal user’s own reply (not staff admin replies)
+- Configurable portal create/reply hourly rate limits (Options → Frontend)
+- Admin stale-form guard (`expected_modified`) and portal status-safe reopen on reply
 - Tools attachment storage health without exposing absolute paths
 - Joomla Privacy plugin export/remove for tickets, messages and attachments (`user_id` / `requester_email`)
 - Action Log plugin for ticket and attachment mutations (admin + portal)
@@ -62,9 +64,11 @@ Confirmed from repository source only:
 
 Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
 
-VPS-verified hardened `1.0.0`: `pkg_devartsupport_v1.0.0.zip` (SHA-256 `9abde708241249555311a6646286c42336384559e985f72dd7eaf99ea3056aed`).
+Previous VPS-verified hardened `1.0.0` (pre rate-limit/concurrency polish): SHA-256 `9abde708241249555311a6646286c42336384559e985f72dd7eaf99ea3056aed`. Latest package pending VPS confirmation.
 
 See `docs/operations.md` for Cloudflare bypass, versioning, and Scheduler notes.
+
+Next optional structural milestone: extract `PortalTicketService` from `TicketService` (core/pro prep).
 
 ## Known Limitations
 
