@@ -96,7 +96,7 @@ class HtmlView extends BaseHtmlView
         $messagesLimit = MessageStorage::normaliseLimit($app->getInput()->getInt('msg_limit', MessageStorage::THREAD_PAGE));
 
         try {
-            $record = TicketDesk::service()->getForOwner($id, (int) $user->id, $messagesLimit);
+            $record = TicketDesk::portal()->getForOwner($id, (int) $user->id, $messagesLimit);
         } catch (TicketNotFoundException) {
             $app->enqueueMessage(Text::_('COM_DEVARTSUPPORT_ERROR_NOT_FOUND'), 'error');
             $app->redirect(PortalRoute::_('index.php?option=com_devartsupport&view=tickets'));

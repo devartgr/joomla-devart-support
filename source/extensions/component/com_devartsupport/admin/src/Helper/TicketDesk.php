@@ -14,6 +14,7 @@ namespace Devart\Component\Devartsupport\Administrator\Helper;
 defined('_JEXEC') or die;
 
 use Devart\Component\Devartsupport\Administrator\Service\CategoryService;
+use Devart\Component\Devartsupport\Administrator\Service\PortalTicketService;
 use Devart\Component\Devartsupport\Administrator\Service\TicketMailService;
 use Devart\Component\Devartsupport\Administrator\Service\TicketService;
 use Joomla\CMS\Factory;
@@ -25,7 +26,22 @@ final class TicketDesk
     {
         $component = self::component();
 
+        if (!method_exists($component, 'getTicketService')) {
+            throw new \RuntimeException(Text::_('JERROR_AN_ERROR_HAS_OCCURRED'), 500);
+        }
+
         return $component->getTicketService();
+    }
+
+    public static function portal(): PortalTicketService
+    {
+        $component = self::component();
+
+        if (!method_exists($component, 'getPortalTicketService')) {
+            throw new \RuntimeException(Text::_('JERROR_AN_ERROR_HAS_OCCURRED'), 500);
+        }
+
+        return $component->getPortalTicketService();
     }
 
     public static function categories(): CategoryService
@@ -48,7 +64,6 @@ final class TicketDesk
 
         if (
             !is_object($component)
-            || !method_exists($component, 'getTicketService')
             || !method_exists($component, 'getCategoryService')
             || !method_exists($component, 'getTicketMailService')
         ) {

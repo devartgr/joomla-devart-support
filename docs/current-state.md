@@ -65,11 +65,11 @@ Confirmed from repository source only:
 
 Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
 
-Previous VPS-verified `1.0.0` (pre mail-queue): SHA-256 `0c150f9bab0c63f20f6e0fe220d31431a9371e8f45ce97e06910474b344acbb9`. Latest package pending VPS confirmation.
+Previous VPS-verified `1.0.0` (mail delivery): SHA-256 `5011f8f972eb5e91f155540124caf71aa6121ceed8ec0e00491e26fc6793fbac`. Latest package (`PortalTicketService` split) pending VPS confirmation.
 
 See `docs/operations.md` for Cloudflare bypass, versioning, mail queue, and Scheduler notes.
 
-Next optional structural milestone: extract `PortalTicketService` from `TicketService` (core/pro prep).
+Portal and administrator ticket flows are split: `PortalTicketService` / `TicketService` with shared `AbstractTicketService`.
 
 ## Known Limitations
 

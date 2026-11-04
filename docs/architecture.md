@@ -37,9 +37,11 @@ an administrator staff desk.
 - Bootstrap: `admin/services/provider.php` and `site/services/provider.php` with
   `DevartsupportComponent`, `MVCFactory`, `ComponentDispatcherFactory`, and site
   `RouterFactory`
-- Ticket requests follow Controller → TicketService → Storage
+- Ticket requests follow Controller → service → Storage
+- Administrator desk: `TicketService`; site portal: `PortalTicketService`
+  (shared helpers in `AbstractTicketService`)
 - Site portal (ownership-scoped): list, create, view and reply for the logged-in
-  user’s tickets only (`user_id` match). No FE attachments or guest tickets.
+  user’s tickets only (`user_id` match). Guest tickets are not implemented.
 - Portal links keep the component menu Itemid (`PortalRoute`) so SEF does not
   fall back to the home page
 - Portal ACL: every portal screen requires login plus `core.create` or

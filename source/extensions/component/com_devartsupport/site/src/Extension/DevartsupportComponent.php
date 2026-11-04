@@ -14,8 +14,8 @@ namespace Devart\Component\Devartsupport\Site\Extension;
 defined('_JEXEC') or die;
 
 use Devart\Component\Devartsupport\Administrator\Service\CategoryService;
+use Devart\Component\Devartsupport\Administrator\Service\PortalTicketService;
 use Devart\Component\Devartsupport\Administrator\Service\TicketMailService;
-use Devart\Component\Devartsupport\Administrator\Service\TicketService;
 use Joomla\CMS\Component\Router\RouterServiceInterface;
 use Joomla\CMS\Component\Router\RouterServiceTrait;
 use Joomla\CMS\Extension\MVCComponent;
@@ -24,20 +24,20 @@ final class DevartsupportComponent extends MVCComponent implements RouterService
 {
     use RouterServiceTrait;
 
-    private TicketService $ticketService;
+    private PortalTicketService $portalTicketService;
 
     private CategoryService $categoryService;
 
     private TicketMailService $ticketMailService;
 
-    public function setTicketService(TicketService $ticketService): void
+    public function setPortalTicketService(PortalTicketService $portalTicketService): void
     {
-        $this->ticketService = $ticketService;
+        $this->portalTicketService = $portalTicketService;
     }
 
-    public function getTicketService(): TicketService
+    public function getPortalTicketService(): PortalTicketService
     {
-        return $this->ticketService;
+        return $this->portalTicketService;
     }
 
     public function setCategoryService(CategoryService $categoryService): void

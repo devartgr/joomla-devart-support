@@ -70,7 +70,7 @@ class HtmlView extends BaseHtmlView
             $app->setUserState('com_devartsupport.portal.tickets.limitstart', 0);
         }
 
-        $result = TicketDesk::service()->listForOwner(
+        $result = TicketDesk::portal()->listForOwner(
             (int) $user->id,
             $this->search,
             $this->status,

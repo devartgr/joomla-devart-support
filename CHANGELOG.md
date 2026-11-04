@@ -27,6 +27,7 @@ section.
 - Admin ticket save rejects stale forms via `expected_modified`.
 - Configurable portal rate limits in Options (create/reply hourly caps).
 - Outbound mail queue with Options delivery mode: Immediate (default) or Queued via Scheduler `devartsupport.send_mail` (test mail remains immediate).
+- Split portal ticket logic into `PortalTicketService` (shared helpers in `AbstractTicketService`; staff desk remains `TicketService`).
 
 ## Development history (superseded numbering)
 

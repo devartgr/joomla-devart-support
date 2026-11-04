@@ -17,7 +17,7 @@ use Devart\Component\Devartsupport\Administrator\Exception\TicketNotFoundExcepti
 use Devart\Component\Devartsupport\Administrator\Exception\TicketValidationException;
 use Devart\Component\Devartsupport\Administrator\Helper\TicketDesk;
 use Devart\Component\Devartsupport\Administrator\Helper\UploadInput;
-use Devart\Component\Devartsupport\Administrator\Service\TicketService;
+use Devart\Component\Devartsupport\Administrator\Service\PortalTicketService;
 use Devart\Component\Devartsupport\Site\Helper\PortalAccess;
 use Devart\Component\Devartsupport\Site\Helper\PortalRoute;
 use Joomla\CMS\Language\Text;
@@ -44,7 +44,7 @@ class TicketController extends BaseController
         $data = (array) $this->input->get('jform', [], 'array');
 
         try {
-            $id = TicketDesk::service()->createFromPortal($data, (int) $user->id, $this->uploadedFiles());
+            $id = TicketDesk::portal()->createFromPortal($data, (int) $user->id, $this->uploadedFiles());
         } catch (TicketValidationException $error) {
             $this->app->enqueueMessage(Text::_($error->getLanguageKey()), 'error');
             $this->app->setUserState('com_devartsupport.portal.ticket.data', $data);
@@ -68,7 +68,7 @@ class TicketController extends BaseController
         $reply = (string) ($data['reply'] ?? '');
 
         try {
-            TicketDesk::service()->replyFromPortal($id, $reply, (int) $user->id, $this->uploadedFiles());
+            TicketDesk::portal()->replyFromPortal($id, $reply, (int) $user->id, $this->uploadedFiles());
         } catch (TicketValidationException $error) {
             $this->app->enqueueMessage(Text::_($error->getLanguageKey()), 'error');
             $this->app->setUserState('com_devartsupport.portal.reply.data', $data);
@@ -96,7 +96,7 @@ class TicketController extends BaseController
         $ticketId = $this->input->getInt('id', $this->input->getInt('ticket_id'));
 
         try {
-            $file = TicketDesk::service()->downloadForOwner($attachmentId, (int) $user->id);
+            $file = TicketDesk::portal()->downloadForOwner($attachmentId, (int) $user->id);
         } catch (TicketValidationException $error) {
             $this->app->enqueueMessage(Text::_($error->getLanguageKey()), 'error');
             $this->setRedirect(PortalRoute::_('index.php?option=com_devartsupport&view=ticket&id=' . max(0, $ticketId)));
@@ -130,12 +130,12 @@ class TicketController extends BaseController
 
     public function close(): void
     {
-        $this->changePortalStatus(TicketService::STATUS_CLOSED, 'COM_DEVARTSUPPORT_PORTAL_TICKET_CLOSED');
+        $this->changePortalStatus(PortalTicketService::STATUS_CLOSED, 'COM_DEVARTSUPPORT_PORTAL_TICKET_CLOSED');
     }
 
     public function reopen(): void
     {
-        $this->changePortalStatus(TicketService::STATUS_OPEN, 'COM_DEVARTSUPPORT_PORTAL_TICKET_REOPENED');
+        $this->changePortalStatus(PortalTicketService::STATUS_OPEN, 'COM_DEVARTSUPPORT_PORTAL_TICKET_REOPENED');
     }
 
     public function savePriority(): void
@@ -147,7 +147,7 @@ class TicketController extends BaseController
         $priority = (string) $this->input->get('priority', '', 'cmd');
 
         try {
-            TicketDesk::service()->updatePriorityFromPortal($id, $priority, (int) $user->id);
+            TicketDesk::portal()->updatePriorityFromPortal($id, $priority, (int) $user->id);
         } catch (TicketValidationException $error) {
             $this->app->enqueueMessage(Text::_($error->getLanguageKey()), 'error');
             $this->setRedirect(PortalRoute::_('index.php?option=com_devartsupport&view=ticket&id=' . max(0, $id)));
@@ -172,7 +172,7 @@ class TicketController extends BaseController
         $id = $this->input->getInt('id');
 
         try {
-            TicketDesk::service()->setStatusFromPortal($id, $status, (int) $user->id);
+            TicketDesk::portal()->setStatusFromPortal($id, $status, (int) $user->id);
         } catch (TicketValidationException $error) {
             $this->app->enqueueMessage(Text::_($error->getLanguageKey()), 'error');
             $this->setRedirect(PortalRoute::_('index.php?option=com_devartsupport&view=ticket&id=' . max(0, $id)));

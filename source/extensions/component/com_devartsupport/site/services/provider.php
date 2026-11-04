@@ -17,8 +17,8 @@ use Devart\Component\Devartsupport\Administrator\Service\Storage\CategoryStorage
 use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\MessageStorage;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\TicketStorage;
+use Devart\Component\Devartsupport\Administrator\Service\PortalTicketService;
 use Devart\Component\Devartsupport\Administrator\Service\TicketMailService;
-use Devart\Component\Devartsupport\Administrator\Service\TicketService;
 use Devart\Component\Devartsupport\Site\Extension\DevartsupportComponent;
 use Joomla\CMS\Component\Router\RouterFactoryInterface;
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
@@ -56,8 +56,8 @@ return new class implements ServiceProviderInterface {
         $container->set(TicketMailService::class, static function (Container $container): TicketMailService {
             return new TicketMailService($container->get(MailQueueStorage::class));
         });
-        $container->set(TicketService::class, static function (Container $container): TicketService {
-            return new TicketService(
+        $container->set(PortalTicketService::class, static function (Container $container): PortalTicketService {
+            return new PortalTicketService(
                 $container->get(TicketStorage::class),
                 $container->get(MessageStorage::class),
                 $container->get(CategoryStorage::class),
@@ -77,7 +77,7 @@ return new class implements ServiceProviderInterface {
             $component = new DevartsupportComponent($container->get(ComponentDispatcherFactoryInterface::class));
             $component->setMVCFactory($container->get(MVCFactoryInterface::class));
             $component->setRouterFactory($container->get(RouterFactoryInterface::class));
-            $component->setTicketService($container->get(TicketService::class));
+            $component->setPortalTicketService($container->get(PortalTicketService::class));
             $component->setCategoryService($container->get(CategoryService::class));
             $component->setTicketMailService($container->get(TicketMailService::class));
 
