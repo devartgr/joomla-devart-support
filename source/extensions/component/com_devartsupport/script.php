@@ -14,6 +14,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\Table\Menu;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
@@ -319,7 +320,15 @@ class Com_DevartsupportInstallerScript
                     . ' int unsigned NOT NULL DEFAULT 0 AFTER ' . $db->quoteName('status')
                 )->execute();
             }
+        } catch (\Throwable $e) {
+            Log::add(
+                'ensureTicketColumns: failed to add category_id: ' . $e->getMessage(),
+                Log::WARNING,
+                'com_devartsupport'
+            );
+        }
 
+        try {
             $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
 
             if (!isset($columns['priority'])) {
@@ -329,7 +338,15 @@ class Com_DevartsupportInstallerScript
                     . ' varchar(16) NOT NULL DEFAULT \'normal\' AFTER ' . $db->quoteName('category_id')
                 )->execute();
             }
+        } catch (\Throwable $e) {
+            Log::add(
+                'ensureTicketColumns: failed to add priority: ' . $e->getMessage(),
+                Log::WARNING,
+                'com_devartsupport'
+            );
+        }
 
+        try {
             $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
 
             if (!isset($columns['published'])) {
@@ -340,7 +357,15 @@ class Com_DevartsupportInstallerScript
                     . ' tinyint NOT NULL DEFAULT 1 AFTER ' . $db->quoteName($after)
                 )->execute();
             }
+        } catch (\Throwable $e) {
+            Log::add(
+                'ensureTicketColumns: failed to add published: ' . $e->getMessage(),
+                Log::WARNING,
+                'com_devartsupport'
+            );
+        }
 
+        try {
             $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
 
             if (!isset($columns['version'])) {
@@ -351,14 +376,18 @@ class Com_DevartsupportInstallerScript
                     . ' int unsigned NOT NULL DEFAULT 1 AFTER ' . $db->quoteName($after)
                 )->execute();
             }
-
-            $this->ensureTicketIndex($db, 'idx_category_id', 'category_id');
-            $this->ensureTicketIndex($db, 'idx_priority', 'priority');
-            $this->ensureTicketIndex($db, 'idx_published', 'published');
-            $this->migrateLegacyPendingStatus($db);
-        } catch (\Throwable) {
-            // Column/index may already exist on numbering-reset upgrades.
+        } catch (\Throwable $e) {
+            Log::add(
+                'ensureTicketColumns: failed to add version: ' . $e->getMessage(),
+                Log::WARNING,
+                'com_devartsupport'
+            );
         }
+
+        $this->ensureTicketIndex($db, 'idx_category_id', 'category_id');
+        $this->ensureTicketIndex($db, 'idx_priority', 'priority');
+        $this->ensureTicketIndex($db, 'idx_published', 'published');
+        $this->migrateLegacyPendingStatus($db);
     }
 
     /**

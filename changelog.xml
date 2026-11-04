@@ -1,37 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+
     <changelog>
         <element>pkg_devartsupport</element>
         <type>package</type>
         <version>1.0.0</version>
+
         <addition>
-            <item>Public-facing version line reset to 1.0.0 (product state matches former internal 1.0.46)</item>
+            <item>First public release of the Joomla 6 ticket desk with registered-user site portal and administrator staff desk</item>
+            <item>Private attachments for portal and administrator with configurable allowed types and optional retention purge</item>
             <item>Configurable private attachment folder name under the private storage root</item>
-            <item>Optional attachment retention with scheduled purge (plg_task_devartsupport)</item>
-            <item>Retention warning on admin and portal upload/list screens</item>
-            <item>RAR in the safe attachment file-type catalog</item>
-            <item>Registered portal menu auto-create, requester status mail, Action Log and Privacy plugins</item>
+            <item>Staff and requester email notifications with Immediate delivery (default) or Queued Scheduler outbox</item>
+            <item>Privacy, Action Log, and task plugins packaged with the component</item>
+            <item>Registered portal menu auto-create on install or update when none exists</item>
+            <item>Fifteen packaged locales for administrator, site, and Action Log strings</item>
         </addition>
+
         <change>
-            <item>Pre-public hardening: schema update cleanup, indexes, portal concurrency-safe writes, MIME and purge limits, rate limits, createQuery</item>
-            <item>Author-copy email is portal-only (staff admin replies no longer receive a personal copy)</item>
-            <item>Installer preflight purges leftover internal SQL updates after the 1.0.0 numbering reset</item>
-            <item>File-first attachment purge, portal status-safe reopen, admin stale-form guard, configurable portal rate limits</item>
-            <item>Mail delivery Options: Immediate (default) or Queued Scheduler outbox for ticket notifications</item>
-            <item>Portal ticket logic split into PortalTicketService (shared AbstractTicketService helpers)</item>
-            <item>Atomic admin ticket save via integer version optimistic lock</item>
-            <item>Fix expected_version binding on the admin ticket form (stale-save false positive)</item>
-            <item>Accept additional ZIP MIME detections for host finfo differences</item>
-            <item>Allow validated ZIP/RAR uploads that contain PHP (skip Joomla isSafeFile archive scan)</item>
-            <item>Portal TicketDesk fallback when site Extension portal getter is missing</item>
-            <item>Safer portal Close ticket control with confirmation prompt</item>
-            <item>Mail queue UTF-8-safe truncation and failed-row purge after 30 days</item>
+            <item>Ticket statuses are open and closed only; legacy pending rows migrate to open</item>
+            <item>Portal owners may set priority and close or reopen their own tickets</item>
+            <item>Author-copy email applies only to portal user replies, not administrator staff replies</item>
+            <item>Mail delivery Options: Immediate or Queued via Scheduler task devartsupport.send_mail</item>
+            <item>Portal ticket logic lives in PortalTicketService with shared AbstractTicketService helpers</item>
+            <item>Safer portal Close control uses quiet styling and a confirmation prompt</item>
         </change>
+
+        <fix>
+            <item>Atomic admin ticket save via integer version optimistic lock with expected_version form binding</item>
+            <item>Portal reply reopen uses conditional SQL so concurrent staff status changes are not overwritten</item>
+            <item>ZIP uploads accept host finfo MIME variants and verify local-header magic bytes before store</item>
+            <item>Validated ZIP and RAR uploads are not blocked by Joomla isSafeFile archive content scans</item>
+            <item>Portal TicketDesk falls back when the site Extension portal getter is missing or uninitialised</item>
+            <item>Installer ensures ticket columns with per-ALTER error logging so one failed ALTER cannot skip version</item>
+            <item>Installer preflight purges leftover internal SQL updates after the numbering reset</item>
+            <item>Attachment retention purge deletes private files before database rows and keeps rows on failed deletes</item>
+            <item>Mail queue uses UTF-8-safe truncation and purges failed rows older than 30 days</item>
+            <item>Configurable portal create and reply rate limits in Options</item>
+        </fix>
+
         <note>
             <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
-            <item>Pre-public: stay on 1.0.0 until the first public release is declared</item>
+            <item>Install and update only through pkg_devartsupport</item>
             <item>Installing over former internal 1.0.x builds is supported (numbering reset)</item>
-            <item>Sites on former internal 1.0.46 must install this ZIP manually</item>
+            <item>Guest tickets, assignment, modules, and live chat remain out of scope</item>
         </note>
     </changelog>
+
 </changelogs>

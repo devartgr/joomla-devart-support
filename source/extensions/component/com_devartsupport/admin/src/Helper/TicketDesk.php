@@ -86,6 +86,8 @@ final class TicketDesk
     /**
      * Fallback when the booted site Extension lacks portal DI (stale OPcache /
      * partial update). Uses the same wiring as site/services/provider.php.
+     *
+     * Keep constructor arguments in sync with site/services/provider.php.
      */
     private static function buildPortalTicketService(): PortalTicketService
     {

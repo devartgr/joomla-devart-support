@@ -421,7 +421,33 @@ abstract class AbstractTicketService
             throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_ATTACHMENT_TYPE');
         }
 
+        if ($extension === 'zip') {
+            $this->assertZipLocalHeader($tmpName);
+        }
+
         return $canonical;
+    }
+
+    /**
+     * Reject non-ZIP payloads that only match by extension / loose MIME.
+     */
+    private function assertZipLocalHeader(string $tmpName): void
+    {
+        $handle = @fopen($tmpName, 'rb');
+
+        if ($handle === false) {
+            throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_ATTACHMENT_TYPE');
+        }
+
+        try {
+            $header = fread($handle, 4);
+
+            if ($header !== "PK\x03\x04" && $header !== "PK\x05\x06") {
+                throw new TicketValidationException('COM_DEVARTSUPPORT_ERROR_ATTACHMENT_TYPE');
+            }
+        } finally {
+            fclose($handle);
+        }
     }
 
     protected function sanitizeDisplayFilename(string $original): string
