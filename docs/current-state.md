@@ -64,11 +64,11 @@ Confirmed from repository source only:
 
 Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
 
-Previous VPS-verified hardened `1.0.0` (pre rate-limit/concurrency polish): SHA-256 `9abde708241249555311a6646286c42336384559e985f72dd7eaf99ea3056aed`. Latest package pending VPS confirmation.
+VPS-verified `1.0.0`: `pkg_devartsupport_v1.0.0.zip` (SHA-256 `0c150f9bab0c63f20f6e0fe220d31431a9371e8f45ce97e06910474b344acbb9`).
 
 See `docs/operations.md` for Cloudflare bypass, versioning, and Scheduler notes.
 
-Next optional structural milestone: extract `PortalTicketService` from `TicketService` (core/pro prep).
+Next optional structural milestone: extract `PortalTicketService` from `TicketService` (core/pro prep). Optional later: outbound mail queue / send caps for heavy concurrent traffic.
 
 ## Known Limitations
 
