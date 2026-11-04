@@ -62,7 +62,7 @@ Confirmed from repository source only:
 
 Versioning: stay on `1.0.0` until the first public release is declared. Former internal builds `1.0.1`–`1.0.46` are archived locally.
 
-Last VPS-verified package before numbering reset: `1.0.46`. Hardened `1.0.0` package pending VPS confirmation.
+VPS-verified hardened `1.0.0`: `pkg_devartsupport_v1.0.0.zip` (SHA-256 `9abde708241249555311a6646286c42336384559e985f72dd7eaf99ea3056aed`).
 
 See `docs/operations.md` for Cloudflare bypass, versioning, and Scheduler notes.
 
