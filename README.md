@@ -4,12 +4,12 @@ Ticket desk for Joomla 6 with a registered-user site portal and an administrator
 
 ![Joomla](https://img.shields.io/badge/Joomla-6.x-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.3%2B-green)
-![Release](https://img.shields.io/badge/Version-1.0.41-orange)
+![Release](https://img.shields.io/badge/Version-1.0.42-orange)
 ![License](https://img.shields.io/badge/License-GPLv3-red)
 
 ## Current Status
 
-Working package `1.0.41` (last VPS-verified: `1.0.38`). Versions stay on `1.0.x` until an explicit final `1.1.0` release.
+Current VPS-verified package `1.0.42`. Versions stay on `1.0.x` until an explicit final `1.1.0` release.
 
 - Package `pkg_devartsupport`
 - Component `com_devartsupport`

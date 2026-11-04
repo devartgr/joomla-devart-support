@@ -3,6 +3,20 @@
     <changelog>
         <element>pkg_devartsupport</element>
         <type>package</type>
+        <version>1.0.44</version>
+        <addition>
+            <item>Auto-create Registered site menu item for the support portal when missing</item>
+            <item>Requester email on staff status-only changes (same Options switch as reply notify)</item>
+        </addition>
+        <note>
+            <item>Uninstall still preserves ticket data and private files by design</item>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.42</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
         <version>1.0.42</version>
         <fix>
             <item>Private attachment path relocates outside DOCUMENT_ROOT for subdirectory Joomla installs</item>

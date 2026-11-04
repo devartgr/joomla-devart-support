@@ -96,31 +96,66 @@ final class TicketMailService
             return;
         }
 
-        $to = strtolower(trim((string) ($ticket->requester_email ?? '')));
+        $this->ensureLanguage();
+        $portalUrl = PortalRoute::absoluteTicket((int) $ticket->id);
 
-        if ($to === '' || !MailHelper::isEmailAddress($to)) {
+        $this->dispatchRequester(
+            $ticket,
+            Text::sprintf(
+                'COM_DEVARTSUPPORT_MAIL_REQUESTER_SUBJECT',
+                (int) $ticket->id,
+                (string) $ticket->subject
+            ),
+            $this->mailText(
+                'COM_DEVARTSUPPORT_MAIL_REQUESTER_BODY',
+                (int) $ticket->id,
+                (string) $ticket->subject,
+                $portalUrl
+            )
+        );
+    }
+
+    /**
+     * Notify the requester that staff changed status (login link only).
+     * Not used when a staff reply mail already went out for the same save.
+     */
+    public function notifyRequesterStatusChange(object $ticket, string $previousStatus, string $newStatus): void
+    {
+        if (!EmailSettings::notifyRequester() || $previousStatus === $newStatus) {
             return;
         }
 
         $this->ensureLanguage();
         $portalUrl = PortalRoute::absoluteTicket((int) $ticket->id);
 
+        $this->dispatchRequester(
+            $ticket,
+            Text::sprintf(
+                'COM_DEVARTSUPPORT_MAIL_REQUESTER_STATUS_SUBJECT',
+                (int) $ticket->id,
+                (string) $ticket->subject
+            ),
+            $this->mailText(
+                'COM_DEVARTSUPPORT_MAIL_REQUESTER_STATUS_BODY',
+                (int) $ticket->id,
+                (string) $ticket->subject,
+                $previousStatus,
+                $newStatus,
+                $portalUrl
+            )
+        );
+    }
+
+    private function dispatchRequester(object $ticket, string $subject, string $body): void
+    {
+        $to = strtolower(trim((string) ($ticket->requester_email ?? '')));
+
+        if ($to === '' || !MailHelper::isEmailAddress($to)) {
+            return;
+        }
+
         try {
-            $this->dispatch(
-                [$to],
-                [],
-                Text::sprintf(
-                    'COM_DEVARTSUPPORT_MAIL_REQUESTER_SUBJECT',
-                    (int) $ticket->id,
-                    (string) $ticket->subject
-                ),
-                $this->mailText(
-                    'COM_DEVARTSUPPORT_MAIL_REQUESTER_BODY',
-                    (int) $ticket->id,
-                    (string) $ticket->subject,
-                    $portalUrl
-                )
-            );
+            $this->dispatch([$to], [], $subject, $body);
         } catch (\Throwable $error) {
             $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
         }

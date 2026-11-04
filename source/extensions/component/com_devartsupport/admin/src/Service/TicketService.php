@@ -560,6 +560,17 @@ final class TicketService
 
             if ($previousStatus !== (string) $updated->status) {
                 $this->mail->notifyStatusChange($updated, $previousStatus, (string) $updated->status);
+
+                // Status-only staff saves: notify requester. When a reply was also
+                // posted, the reply mail already covers the portal login nudge.
+                if ($reply === '') {
+                    $this->mail->notifyRequesterStatusChange(
+                        $updated,
+                        $previousStatus,
+                        (string) $updated->status
+                    );
+                }
+
                 TicketActionLog::log('status_changed', $id, (string) $updated->subject, [
                     'status'  => (string) $updated->status,
                     'channel' => 'admin',
@@ -859,6 +870,7 @@ final class TicketService
 
             $ticket->status = $status;
             $this->mail->notifyStatusChange($ticket, $previousById[$id], $status);
+            $this->mail->notifyRequesterStatusChange($ticket, $previousById[$id], $status);
             TicketActionLog::log('status_changed', $id, (string) $ticket->subject, [
                 'status'  => $status,
                 'channel' => 'admin',

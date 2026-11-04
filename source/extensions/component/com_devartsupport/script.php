@@ -13,6 +13,8 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Installer\InstallerAdapter;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Table\Menu;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 
@@ -31,9 +33,132 @@ class Com_DevartsupportInstallerScript
         $this->ensureAttachmentsTable($db);
         $this->ensurePrivateAttachmentStorage();
         $this->ensureRegisteredPortalAcl($db);
+        $this->ensurePortalMenuItem($db);
         $this->synchroniseSchemaVersion($db, $this->manifestVersion($parent));
 
         return true;
+    }
+
+    /**
+     * Create one Registered-access site menu item for the portal when none exists.
+     * Never overwrites an existing Support site menu item or blocks install/update.
+     */
+    private function ensurePortalMenuItem(object $db): void
+    {
+        try {
+            $existingId = (int) $db->setQuery(
+                'SELECT ' . $db->quoteName('id')
+                . ' FROM ' . $db->quoteName('#__menu')
+                . ' WHERE ' . $db->quoteName('client_id') . ' = 0'
+                . ' AND ' . $db->quoteName('link') . ' LIKE ' . $db->quote('%option=com_devartsupport%')
+                . ' LIMIT 1'
+            )->loadResult();
+
+            if ($existingId > 0) {
+                return;
+            }
+
+            $extensionId = (int) $db->setQuery(
+                'SELECT ' . $db->quoteName('extension_id')
+                . ' FROM ' . $db->quoteName('#__extensions')
+                . ' WHERE ' . $db->quoteName('type') . ' = ' . $db->quote('component')
+                . ' AND ' . $db->quoteName('element') . ' = ' . $db->quote('com_devartsupport')
+                . ' LIMIT 1'
+            )->loadResult();
+
+            if ($extensionId <= 0) {
+                return;
+            }
+
+            $menuType = (string) $db->setQuery(
+                'SELECT ' . $db->quoteName('menutype')
+                . ' FROM ' . $db->quoteName('#__menu')
+                . ' WHERE ' . $db->quoteName('client_id') . ' = 0'
+                . ' AND ' . $db->quoteName('home') . ' = 1'
+                . ' ORDER BY ' . $db->quoteName('id') . ' ASC'
+                . ' LIMIT 1'
+            )->loadResult();
+
+            if ($menuType === '') {
+                $menuType = (string) $db->setQuery(
+                    'SELECT ' . $db->quoteName('menutype')
+                    . ' FROM ' . $db->quoteName('#__menu_types')
+                    . ' WHERE ' . $db->quoteName('client_id') . ' = 0'
+                    . ' ORDER BY ' . $db->quoteName('id') . ' ASC'
+                    . ' LIMIT 1'
+                )->loadResult();
+            }
+
+            if ($menuType === '') {
+                return;
+            }
+
+            $title = 'My support tickets';
+
+            try {
+                $language = Factory::getApplication()->getLanguage();
+                $language->load('com_devartsupport', JPATH_ADMINISTRATOR . '/components/com_devartsupport', null, false, true);
+                $translated = Text::_('COM_DEVARTSUPPORT_MENU_TICKETS_TITLE');
+
+                if ($translated !== '' && $translated !== 'COM_DEVARTSUPPORT_MENU_TICKETS_TITLE') {
+                    $title = $translated;
+                }
+            } catch (\Throwable) {
+                // Keep English fallback title.
+            }
+
+            $alias = 'devart-support-tickets';
+            $baseAlias = $alias;
+            $n = 2;
+
+            while (
+                (int) $db->setQuery(
+                    'SELECT ' . $db->quoteName('id')
+                    . ' FROM ' . $db->quoteName('#__menu')
+                    . ' WHERE ' . $db->quoteName('client_id') . ' = 0'
+                    . ' AND ' . $db->quoteName('parent_id') . ' = 1'
+                    . ' AND ' . $db->quoteName('alias') . ' = ' . $db->quote($alias)
+                    . ' LIMIT 1'
+                )->loadResult() > 0
+            ) {
+                $alias = $baseAlias . '-' . $n;
+                $n++;
+
+                if ($n > 50) {
+                    return;
+                }
+            }
+
+            $parentId = 1;
+            $table = new Menu($db);
+            $table->setLocation($parentId, 'last-child');
+
+            $bound = $table->bind([
+                'menutype'     => $menuType,
+                'title'        => $title,
+                'alias'        => $alias,
+                'path'         => $alias,
+                'link'         => 'index.php?option=com_devartsupport&view=tickets',
+                'type'         => 'component',
+                'published'    => 1,
+                'parent_id'    => $parentId,
+                'level'        => 1,
+                'component_id' => $extensionId,
+                'access'       => 2,
+                'client_id'    => 0,
+                'language'     => '*',
+                'home'         => 0,
+                'params'       => '{}',
+                'browserNav'   => 0,
+                'template_style_id' => 0,
+            ]);
+
+            if (!$bound || !$table->check() || !$table->store()) {
+                return;
+            }
+        } catch (\Throwable) {
+            // Menu can still be created manually; never block install/update.
+        }
     }
 
     /**
@@ -99,7 +224,9 @@ class Com_DevartsupportInstallerScript
 
     public function uninstall(InstallerAdapter $parent): bool
     {
-        // Preserve ticket tables and private attachment files on uninstall.
+        // Intentional: ticket tables and private attachment files are preserved
+        // so support history is not destroyed by a mistaken uninstall. Manual
+        // database/file cleanup remains an administrator responsibility.
         unset($parent);
 
         return true;

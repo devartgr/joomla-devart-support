@@ -4,7 +4,7 @@
 
 Current manifest version:
 
-`1.0.41`
+`1.0.44`
 
 Package:
 
@@ -33,7 +33,7 @@ Confirmed from repository source only:
 - Private ticket attachments (administrator upload/download/delete)
 - Portal attachments when Options enable admin + portal switches (owner upload on new/reply; owner download; no portal delete)
 - Configurable allowed extensions (subset of built-in safe MIME catalog)
-- Attachment storage outside the Joomla web root with legacy migration
+- Attachment storage outside the Joomla web root (relocates beside outermost DOCUMENT_ROOT on subdirectory hosts) with legacy migration
 - Upload MIME validation via `finfo`, forced download disposition, no-store cache headers
 - Attachment downloads require POST with a CSRF token
 - Uninstall preserves ticket tables and private attachment files
@@ -56,19 +56,15 @@ Confirmed from repository source only:
 - Registered portal ACL defaults for `core.create` / `core.edit` when unset
 - Staff manage/reply other users’ tickets only in administrator (portal is ownership-scoped)
 
-Last VPS-verified package: `1.0.38`.
-
-Working package under local test: `1.0.41`.
+Last VPS-verified package: `1.0.44`.
 
 ## Known Limitations
 
-- No guest tickets (prerequisites documented in `docs/guest-tickets-prerequisites.md`)
+- No guest tickets (deferred; see `docs/guest-tickets-prerequisites.md`)
 - No assignment
 - No modules
-- No requester email on status-only changes (staff reply only when enabled)
-- No live chat (out of scope; separate product if ever built)
-- Installer does not create a frontend menu item
-- Uninstall does not remove ticket data; manual cleanup is required if desired
+- No live chat yet (product decision pending: prefer Pro-later or separate product — not Core ticket desk)
+- Uninstall preserves ticket tables and private files by design; manual cleanup if desired
 
 ## Repository Tooling
 

@@ -7,7 +7,7 @@
     <creationDate>2026-11-04</creationDate>
     <copyright>Copyright (C) 2026 Stathopoulos Kostas - DevArt. All rights reserved.</copyright>
     <license>GNU General Public License version 3 or later</license>
-    <version>1.0.42</version>
+    <version>1.0.44</version>
     <description>PLG_ACTIONLOG_DEVARTSUPPORT_XML_DESCRIPTION</description>
     <namespace path="src">Devart\Plugin\Actionlog\Devartsupport</namespace>
     <php_minimum>8.3.0</php_minimum>

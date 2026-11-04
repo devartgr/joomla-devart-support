@@ -12,6 +12,12 @@
 Product change history for bootstrapped repositories begins below this template
 section.
 
+## 1.0.44 — 2026-11-04
+
+- Create a Registered-access site portal menu item on install/update when none exists.
+- Notify requester on staff status-only changes when requester notifications are enabled.
+- Document uninstall data retention as intentional (tables + private files kept).
+
 ## 1.0.42 — 2026-11-04
 
 - Fixed private attachment storage on subdirectory / multi-demo hosts where `dirname(JPATH_ROOT)/private` still sits inside `DOCUMENT_ROOT` (Herd parent roots and VPS demo folders).
