@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details" label="COM_DEVARTSUPPORT_PORTAL_TICKET_NEW_TITLE">
+        <field
+            name="subject"
+            type="text"
+            label="COM_DEVARTSUPPORT_FIELD_SUBJECT"
+            description="COM_DEVARTSUPPORT_FIELD_SUBJECT_DESC"
+            required="true"
+            maxlength="255"
+            filter="string"
+        />
+        <field
+            name="category_id"
+            type="list"
+            label="COM_DEVARTSUPPORT_FIELD_CATEGORY"
+            description="COM_DEVARTSUPPORT_FIELD_CATEGORY_REQUIRED_DESC"
+            required="true"
+        >
+            <option value="">COM_DEVARTSUPPORT_CATEGORY_SELECT</option>
+        </field>
+        <field
+            name="priority"
+            type="list"
+            label="COM_DEVARTSUPPORT_FIELD_PRIORITY"
+            description="COM_DEVARTSUPPORT_FIELD_PRIORITY_DESC"
+            default="normal"
+            required="true"
+        >
+            <option value="low">COM_DEVARTSUPPORT_PRIORITY_LOW</option>
+            <option value="normal">COM_DEVARTSUPPORT_PRIORITY_NORMAL</option>
+            <option value="high">COM_DEVARTSUPPORT_PRIORITY_HIGH</option>
+            <option value="urgent">COM_DEVARTSUPPORT_PRIORITY_URGENT</option>
+        </field>
+        <field
+            name="message"
+            type="textarea"
+            label="COM_DEVARTSUPPORT_FIELD_MESSAGE"
+            description="COM_DEVARTSUPPORT_FIELD_MESSAGE_DESC"
+            rows="8"
+            required="true"
+            filter="SAFEHTML"
+        />
+    </fieldset>
+</form>

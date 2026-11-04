@@ -1,0 +1,38 @@
+{
+    "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+    "name": "com_devartsupport",
+    "version": "1.0.41",
+    "assets": [
+        {
+            "name": "com_devartsupport.admin",
+            "type": "style",
+            "uri": "com_devartsupport/admin.css"
+        },
+        {
+            "name": "com_devartsupport.admin-submenu",
+            "type": "style",
+            "uri": "com_devartsupport/admin-submenu.css"
+        },
+        {
+            "name": "com_devartsupport.site",
+            "type": "style",
+            "uri": "com_devartsupport/site.css"
+        },
+        {
+            "name": "com_devartsupport.admin",
+            "type": "script",
+            "uri": "com_devartsupport/admin.js",
+            "attributes": {
+                "defer": true
+            }
+        },
+        {
+            "name": "com_devartsupport.site",
+            "type": "script",
+            "uri": "com_devartsupport/site.js",
+            "attributes": {
+                "defer": true
+            }
+        }
+    ]
+}

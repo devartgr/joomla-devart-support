@@ -1,0 +1,367 @@
+<?php
+/**
+ * @package     DevArt Support
+ * @subpackage  com_devartsupport
+ *
+ * @copyright   Copyright (C) 2026 Stathopoulos Kostas - DevArt. All rights reserved.
+ * @license     GNU General Public License version 3 or later; see LICENSE.txt
+ */
+
+declare(strict_types=1);
+
+defined('_JEXEC') or die;
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\InstallerAdapter;
+use Joomla\Database\DatabaseInterface;
+use Joomla\Database\ParameterType;
+
+class Com_DevartsupportInstallerScript
+{
+    public function postflight(string $type, InstallerAdapter $parent): bool
+    {
+        if ($type === 'uninstall') {
+            return true;
+        }
+
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $this->ensureCategoriesTable($db);
+        $this->ensureCategoryColumns($db);
+        $this->ensureTicketColumns($db);
+        $this->ensureAttachmentsTable($db);
+        $this->ensurePrivateAttachmentStorage();
+        $this->ensureRegisteredPortalAcl($db);
+        $this->synchroniseSchemaVersion($db, $this->manifestVersion($parent));
+
+        return true;
+    }
+
+    /**
+     * Allow Registered (group 2) to create and reply via the site portal unless
+     * an administrator has already configured those actions explicitly.
+     */
+    private function ensureRegisteredPortalAcl(object $db): void
+    {
+        try {
+            $assetId = (int) $db->setQuery(
+                'SELECT ' . $db->quoteName('id')
+                . ' FROM ' . $db->quoteName('#__assets')
+                . ' WHERE ' . $db->quoteName('name') . ' = ' . $db->quote('com_devartsupport')
+            )->loadResult();
+
+            if ($assetId <= 0) {
+                return;
+            }
+
+            $rulesJson = (string) $db->setQuery(
+                'SELECT ' . $db->quoteName('rules')
+                . ' FROM ' . $db->quoteName('#__assets')
+                . ' WHERE ' . $db->quoteName('id') . ' = ' . $assetId
+            )->loadResult();
+
+            $rules = json_decode($rulesJson !== '' ? $rulesJson : '{}', true);
+
+            if (!\is_array($rules)) {
+                $rules = [];
+            }
+
+            $changed = false;
+
+            if (!\array_key_exists('core.create', $rules)) {
+                $rules['core.create'] = ['2' => 1];
+                $changed = true;
+            }
+
+            if (!\array_key_exists('core.edit', $rules)) {
+                $rules['core.edit'] = ['2' => 1];
+                $changed = true;
+            }
+
+            if (!$changed) {
+                return;
+            }
+
+            $encoded = json_encode($rules, JSON_UNESCAPED_SLASHES);
+
+            if ($encoded === false) {
+                return;
+            }
+
+            $db->setQuery(
+                'UPDATE ' . $db->quoteName('#__assets')
+                . ' SET ' . $db->quoteName('rules') . ' = ' . $db->quote($encoded)
+                . ' WHERE ' . $db->quoteName('id') . ' = ' . $assetId
+            )->execute();
+        } catch (\Throwable) {
+            // Permissions can still be set manually in the component Options.
+        }
+    }
+
+    public function uninstall(InstallerAdapter $parent): bool
+    {
+        // Preserve ticket tables and private attachment files on uninstall.
+        unset($parent);
+
+        return true;
+    }
+
+    private function ensureCategoriesTable(object $db): void
+    {
+        $db->setQuery(
+            'CREATE TABLE IF NOT EXISTS ' . $db->quoteName('#__devartsupport_categories') . ' ('
+            . $db->quoteName('id') . ' int unsigned NOT NULL AUTO_INCREMENT,'
+            . $db->quoteName('title') . ' varchar(255) NOT NULL DEFAULT \'\','
+            . $db->quoteName('published') . ' tinyint unsigned NOT NULL DEFAULT 1,'
+            . $db->quoteName('attachments_enabled') . ' tinyint unsigned NOT NULL DEFAULT 1,'
+            . $db->quoteName('ordering') . ' int NOT NULL DEFAULT 0,'
+            . 'PRIMARY KEY (' . $db->quoteName('id') . '),'
+            . 'KEY ' . $db->quoteName('idx_published_ordering') . ' ('
+            . $db->quoteName('published') . ',' . $db->quoteName('ordering') . ')'
+            . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci'
+        )->execute();
+    }
+
+    private function ensureCategoryColumns(object $db): void
+    {
+        $columns = $db->getTableColumns('#__devartsupport_categories') ?: [];
+
+        if (isset($columns['attachments_enabled'])) {
+            return;
+        }
+
+        $db->setQuery(
+            'ALTER TABLE ' . $db->quoteName('#__devartsupport_categories')
+            . ' ADD COLUMN ' . $db->quoteName('attachments_enabled')
+            . ' tinyint unsigned NOT NULL DEFAULT 1 AFTER ' . $db->quoteName('published')
+        )->execute();
+    }
+
+    private function ensureTicketColumns(object $db): void
+    {
+        $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+
+        if (!isset($columns['category_id'])) {
+            $db->setQuery(
+                'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+                . ' ADD COLUMN ' . $db->quoteName('category_id')
+                . ' int unsigned NOT NULL DEFAULT 0 AFTER ' . $db->quoteName('status')
+            )->execute();
+        }
+
+        $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+
+        if (!isset($columns['priority'])) {
+            $db->setQuery(
+                'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+                . ' ADD COLUMN ' . $db->quoteName('priority')
+                . ' varchar(16) NOT NULL DEFAULT \'normal\' AFTER ' . $db->quoteName('category_id')
+            )->execute();
+        }
+
+        $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+
+        if (!isset($columns['published'])) {
+            $after = isset($columns['status']) ? 'status' : 'subject';
+            $db->setQuery(
+                'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+                . ' ADD COLUMN ' . $db->quoteName('published')
+                . ' tinyint NOT NULL DEFAULT 1 AFTER ' . $db->quoteName($after)
+            )->execute();
+        }
+
+        $this->ensureTicketIndex($db, 'idx_category_id', 'category_id');
+        $this->ensureTicketIndex($db, 'idx_priority', 'priority');
+        $this->ensureTicketIndex($db, 'idx_published', 'published');
+        $this->migrateLegacyPendingStatus($db);
+    }
+
+    /**
+     * Pending was removed; map leftover rows to open.
+     */
+    private function migrateLegacyPendingStatus(object $db): void
+    {
+        try {
+            $columns = $db->getTableColumns('#__devartsupport_tickets') ?: [];
+
+            if (!isset($columns['status'])) {
+                return;
+            }
+
+            $pending = 'pending';
+            $open = 'open';
+            $query = $db->getQuery(true)
+                ->update($db->quoteName('#__devartsupport_tickets'))
+                ->set($db->quoteName('status') . ' = :openStatus')
+                ->where($db->quoteName('status') . ' = :pendingStatus');
+            $query->bind(':openStatus', $open, ParameterType::STRING);
+            $query->bind(':pendingStatus', $pending, ParameterType::STRING);
+            $db->setQuery($query)->execute();
+        } catch (\Throwable) {
+            // Safe to continue; rows can be corrected manually if needed.
+        }
+    }
+
+    private function ensureTicketIndex(object $db, string $index, string $column): void
+    {
+        $table = $db->replacePrefix('#__devartsupport_tickets');
+        $db->setQuery('SHOW INDEX FROM ' . $db->quoteName($table));
+
+        foreach ($db->loadObjectList() ?: [] as $row) {
+            if ((string) ($row->Key_name ?? '') === $index) {
+                return;
+            }
+        }
+
+        $db->setQuery(
+            'ALTER TABLE ' . $db->quoteName('#__devartsupport_tickets')
+            . ' ADD KEY ' . $db->quoteName($index) . ' (' . $db->quoteName($column) . ')'
+        )->execute();
+    }
+
+    private function ensureAttachmentsTable(object $db): void
+    {
+        $db->setQuery(
+            'CREATE TABLE IF NOT EXISTS ' . $db->quoteName('#__devartsupport_attachments') . ' ('
+            . $db->quoteName('id') . ' int unsigned NOT NULL AUTO_INCREMENT,'
+            . $db->quoteName('ticket_id') . ' int unsigned NOT NULL,'
+            . $db->quoteName('filename') . ' varchar(255) NOT NULL DEFAULT \'\','
+            . $db->quoteName('stored_name') . ' varchar(80) NOT NULL DEFAULT \'\','
+            . $db->quoteName('mime') . ' varchar(128) NOT NULL DEFAULT \'application/octet-stream\','
+            . $db->quoteName('size') . ' int unsigned NOT NULL DEFAULT 0,'
+            . $db->quoteName('created') . ' datetime NOT NULL,'
+            . $db->quoteName('created_by') . ' int unsigned NOT NULL DEFAULT 0,'
+            . 'PRIMARY KEY (' . $db->quoteName('id') . '),'
+            . 'UNIQUE KEY ' . $db->quoteName('idx_stored_name') . ' (' . $db->quoteName('stored_name') . '),'
+            . 'KEY ' . $db->quoteName('idx_ticket_id') . ' (' . $db->quoteName('ticket_id') . ')'
+            . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci'
+        )->execute();
+    }
+
+    private function ensurePrivateAttachmentStorage(): void
+    {
+        $helper = JPATH_ADMINISTRATOR . '/components/com_devartsupport/src/Helper/PrivateAttachmentPath.php';
+
+        if (is_file($helper)) {
+            require_once $helper;
+
+            try {
+                \Devart\Component\Devartsupport\Administrator\Helper\PrivateAttachmentPath::ensureDirectory();
+                \Devart\Component\Devartsupport\Administrator\Helper\PrivateAttachmentPath::migrateLegacyFiles();
+
+                return;
+            } catch (\Throwable $e) {
+                // Fall back to native PHP below.
+            }
+        }
+
+        $directory = str_replace('\\', '/', dirname(JPATH_ROOT) . '/private/com_devartsupport');
+        $root = rtrim(str_replace('\\', '/', (string) JPATH_ROOT), '/');
+
+        if ($directory === $root || str_starts_with($directory . '/', $root . '/')) {
+            return;
+        }
+
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            return;
+        }
+
+        if (!is_file($directory . '/.htaccess')) {
+            file_put_contents(
+                $directory . '/.htaccess',
+                "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n"
+                . "<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n"
+            );
+        }
+
+        if (!is_file($directory . '/index.html')) {
+            file_put_contents($directory . '/index.html', '');
+        }
+
+        $legacy = str_replace('\\', '/', JPATH_ADMINISTRATOR . '/components/com_devartsupport/files');
+
+        if (!is_dir($legacy)) {
+            return;
+        }
+
+        foreach (scandir($legacy) ?: [] as $file) {
+            if ($file === '.' || $file === '..' || $file === '.htaccess' || $file === 'index.html') {
+                continue;
+            }
+
+            if (!preg_match('/^[a-f0-9]{32}\.[a-z0-9]{2,5}$/', $file)) {
+                continue;
+            }
+
+            $from = $legacy . '/' . $file;
+            $to = $directory . '/' . $file;
+
+            if (!is_file($from)) {
+                continue;
+            }
+
+            if (is_file($to)) {
+                @unlink($from);
+                continue;
+            }
+
+            if (!@rename($from, $to) && @copy($from, $to)) {
+                @unlink($from);
+            }
+        }
+    }
+
+    private function manifestVersion(InstallerAdapter $parent): string
+    {
+        $manifest = $parent->getManifest();
+        $version = trim((string) ($manifest->version ?? ''));
+
+        return $version !== '' ? $version : '0.0.0';
+    }
+
+    private function synchroniseSchemaVersion(object $db, string $version): void
+    {
+        $query = $db->getQuery(true)
+            ->select($db->quoteName('extension_id'))
+            ->from($db->quoteName('#__extensions'))
+            ->where($db->quoteName('type') . ' = ' . $db->quote('component'))
+            ->where($db->quoteName('element') . ' = ' . $db->quote('com_devartsupport'));
+        $db->setQuery($query);
+        $extensionId = (int) $db->loadResult();
+
+        if ($extensionId < 1) {
+            return;
+        }
+
+        $currentQuery = $db->getQuery(true)
+            ->select($db->quoteName('version_id'))
+            ->from($db->quoteName('#__schemas'))
+            ->where($db->quoteName('extension_id') . ' = :schemaExtension');
+        $currentQuery->bind(':schemaExtension', $extensionId, ParameterType::INTEGER);
+        $db->setQuery($currentQuery);
+        $current = trim((string) $db->loadResult());
+
+        if ($current === $version) {
+            return;
+        }
+
+        $needsReset = $current === '' || $current === '1.1.0' || version_compare($current, $version, '<');
+
+        if (!$needsReset) {
+            return;
+        }
+
+        $delete = $db->getQuery(true)
+            ->delete($db->quoteName('#__schemas'))
+            ->where($db->quoteName('extension_id') . ' = :deleteSchema');
+        $delete->bind(':deleteSchema', $extensionId, ParameterType::INTEGER);
+        $db->setQuery($delete)->execute();
+
+        $insert = $db->getQuery(true)
+            ->insert($db->quoteName('#__schemas'))
+            ->columns($db->quoteName(['extension_id', 'version_id']))
+            ->values(':insertExtension, :insertVersion');
+        $insert->bind(':insertExtension', $extensionId, ParameterType::INTEGER);
+        $insert->bind(':insertVersion', $version);
+        $db->setQuery($insert)->execute();
+    }
+}

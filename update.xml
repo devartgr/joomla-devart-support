@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<updates>
+    <update>
+        <name>DevArt Support Package</name>
+        <description>Joomla 6 ticket desk with registered-user site portal and administrator staff desk.</description>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <client>site</client>
+        <version>1.0.41</version>
+        <infourl title="DevArt Support">https://github.com/devartgr/joomla-devart-support</infourl>
+        <downloads>
+            <downloadurl type="full" format="zip">https://github.com/devartgr/joomla-devart-support/releases/download/v1.0.41/pkg_devartsupport_v1.0.41.zip</downloadurl>
+        </downloads>
+        <sha256>161d7027c63cc7db7106f5b61a2c48f4e1e665f5c1f76487a3a0c816e4d77ffc</sha256>
+        <tags><tag>stable</tag></tags>
+        <changelogurl>https://raw.githubusercontent.com/devartgr/joomla-devart-support/main/changelog.xml</changelogurl>
+        <targetplatform name="joomla" version="6.*" />
+        <php_minimum>8.3.0</php_minimum>
+        <maintainer>Kostas Stathopoulos</maintainer>
+        <maintainerurl>https://devart.gr</maintainerurl>
+    </update>
+</updates>

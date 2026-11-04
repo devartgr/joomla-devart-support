@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details" label="COM_DEVARTSUPPORT_TICKET">
+        <field name="id" type="hidden" default="0" />
+        <field
+            name="subject"
+            type="text"
+            label="COM_DEVARTSUPPORT_FIELD_SUBJECT"
+            description="COM_DEVARTSUPPORT_FIELD_SUBJECT_DESC"
+            required="true"
+            maxlength="255"
+            filter="string"
+        />
+        <field
+            name="status"
+            type="list"
+            label="COM_DEVARTSUPPORT_FIELD_STATUS"
+            description="COM_DEVARTSUPPORT_FIELD_STATUS_DESC"
+            default="open"
+            required="true"
+        >
+            <option value="open">COM_DEVARTSUPPORT_STATUS_OPEN</option>
+            <option value="closed">COM_DEVARTSUPPORT_STATUS_CLOSED</option>
+        </field>
+        <field
+            name="category_id"
+            type="list"
+            label="COM_DEVARTSUPPORT_FIELD_CATEGORY"
+            description="COM_DEVARTSUPPORT_FIELD_CATEGORY_REQUIRED_DESC"
+            required="true"
+        >
+            <option value="">COM_DEVARTSUPPORT_CATEGORY_SELECT</option>
+        </field>
+        <field
+            name="priority"
+            type="list"
+            label="COM_DEVARTSUPPORT_FIELD_PRIORITY"
+            description="COM_DEVARTSUPPORT_FIELD_PRIORITY_DESC"
+            default="normal"
+            required="true"
+        >
+            <option value="low">COM_DEVARTSUPPORT_PRIORITY_LOW</option>
+            <option value="normal">COM_DEVARTSUPPORT_PRIORITY_NORMAL</option>
+            <option value="high">COM_DEVARTSUPPORT_PRIORITY_HIGH</option>
+            <option value="urgent">COM_DEVARTSUPPORT_PRIORITY_URGENT</option>
+        </field>
+        <field
+            name="user_id"
+            type="user"
+            label="COM_DEVARTSUPPORT_FIELD_USER"
+            description="COM_DEVARTSUPPORT_FIELD_USER_DESC"
+            default="0"
+        />
+        <field
+            name="requester_name"
+            type="text"
+            label="COM_DEVARTSUPPORT_FIELD_REQUESTER_NAME"
+            description="COM_DEVARTSUPPORT_FIELD_REQUESTER_NAME_DESC"
+            required="true"
+            maxlength="255"
+            filter="string"
+        />
+        <field
+            name="requester_email"
+            type="email"
+            label="COM_DEVARTSUPPORT_FIELD_REQUESTER_EMAIL"
+            description="COM_DEVARTSUPPORT_FIELD_REQUESTER_EMAIL_DESC"
+            maxlength="255"
+            validate="email"
+            filter="string"
+        />
+        <field
+            name="message"
+            type="textarea"
+            label="COM_DEVARTSUPPORT_FIELD_MESSAGE"
+            description="COM_DEVARTSUPPORT_FIELD_MESSAGE_DESC"
+            rows="8"
+            filter="SAFEHTML"
+        />
+        <field
+            name="reply"
+            type="textarea"
+            label="COM_DEVARTSUPPORT_FIELD_REPLY"
+            description="COM_DEVARTSUPPORT_FIELD_REPLY_DESC"
+            rows="6"
+            filter="SAFEHTML"
+        />
+    </fieldset>
+</form>

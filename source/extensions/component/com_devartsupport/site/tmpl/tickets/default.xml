@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <layout title="COM_DEVARTSUPPORT_MENU_TICKETS_TITLE" option="COM_DEVARTSUPPORT_MENU_TICKETS_OPTION">
+        <message>COM_DEVARTSUPPORT_MENU_TICKETS_DESC</message>
+    </layout>
+    <fields name="request">
+        <fieldset name="request">
+            <field name="view" type="hidden" default="tickets" />
+        </fieldset>
+    </fields>
+</metadata>

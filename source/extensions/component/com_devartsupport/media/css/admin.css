@@ -1,0 +1,218 @@
+/** DevArt Support administrator styles */
+
+.com-devartsupport .devart-support-admin-wrap {
+    width: 100%;
+}
+
+.com-devartsupport .devart-support-admin-header {
+    width: min(886px, 100%);
+    margin: 0 auto 1.5rem;
+    text-align: center;
+}
+
+.com-devartsupport .devart-support-admin-header--dashboard {
+    width: min(1024px, 100%);
+}
+
+.com-devartsupport .devart-support-admin-header img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    box-shadow: none;
+    background: transparent;
+}
+
+@media (max-width: 991.98px) {
+    .com-devartsupport .devart-support-admin-header {
+        margin-bottom: 1rem;
+        padding: 0 12px;
+        box-sizing: border-box;
+    }
+}
+
+.com-devartsupport .devart-support-hub-intro {
+    max-width: 920px;
+    margin: 0 auto 1.5rem;
+    text-align: center;
+    color: #5d6b7e;
+}
+
+.com-devartsupport .devart-support-hub-action-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--template-bg-dark-15, #dee2e6);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.com-devartsupport .devart-support-hub-action-body {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.com-devartsupport .devart-support-hub-icon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    margin: 0 auto 1rem;
+    border-radius: 999px;
+    font-size: 2rem;
+    line-height: 1;
+    color: #fff;
+}
+
+.com-devartsupport .devart-support-hub-icon [class^="icon-"],
+.com-devartsupport .devart-support-hub-icon [class*=" icon-"] {
+    display: inline-flex;
+    margin: 0;
+    width: auto;
+    height: auto;
+    font-size: 2rem;
+    line-height: 1;
+    color: #fff;
+}
+
+.com-devartsupport .devart-support-hub-icon--tickets {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.24);
+}
+
+.com-devartsupport .devart-support-hub-icon--categories {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+    box-shadow: 0 10px 24px rgba(220, 53, 69, 0.28);
+}
+
+.com-devartsupport .devart-support-hub-icon--tools {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.28);
+}
+
+.com-devartsupport .devart-support-hub-icon--settings {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.28);
+}
+
+.com-devartsupport .devart-support-hub-icon--options {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    box-shadow: 0 10px 24px rgba(100, 116, 139, 0.24);
+}
+
+.com-devartsupport .devart-support-hub-action-title {
+    margin: 0 0 0.65rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2f46;
+}
+
+.com-devartsupport .devart-support-hub-action-desc {
+    margin: 0 0 1.25rem;
+    color: #5d6b7e;
+    font-size: 0.95rem;
+}
+
+.com-devartsupport .devart-support-hub-action-btn {
+    width: 100%;
+    margin-top: auto;
+}
+
+.devart-support-admin-footer {
+    opacity: 0.7;
+    font-size: 13px;
+}
+
+.devart-support-admin-footer a {
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.devart-support-admin-footer a:hover {
+    text-decoration: underline;
+}
+
+.devart-support-status--open {
+    background: #2563eb;
+}
+
+.devart-support-status--closed {
+    background: #64748b;
+}
+
+.devart-support-priority--low {
+    background: #64748b;
+}
+
+.devart-support-priority--normal {
+    background: #2563eb;
+}
+
+.devart-support-priority--high {
+    background: #d97706;
+}
+
+.devart-support-priority--urgent {
+    background: #dc2626;
+}
+
+.devart-support-thread {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.devart-support-message {
+    padding: 1rem;
+    border: 1px solid var(--template-bg-dark-15, #dee2e6);
+    border-radius: .5rem;
+    background: #fff;
+}
+
+.devart-support-message--staff {
+    background: #e8f1fb;
+    border-color: #8bb3e0;
+}
+
+.devart-support-staff-label {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #0b3d6e;
+    background: #cfe2f5;
+}
+
+.devart-support-message header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .5rem 1rem;
+    margin-bottom: .5rem;
+}
+
+.devart-support-message header .text-muted {
+    margin-left: auto;
+}
+
+.devart-support-ticket-row--needs-reply {
+    background: #fff8e6;
+}
+
+.devart-support-attachments {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+}
+
+.devart-support-attachments li {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .5rem 0;
+    border-bottom: 1px solid var(--template-bg-dark-15, #dee2e6);
+}
+

@@ -1,0 +1,36 @@
+/* DevArt Red — active Support leaf submenu only (same pattern as Sitemaps).
+   Selectors beat Atum .main-nav a.mm-active. Never restyle the parent link color. */
+.main-nav li li a.mm-active.no-dropdown[href*="option=com_devartsupport"],
+.main-nav li.item-level-3 > a.mm-active[href*="option=com_devartsupport"],
+.main-nav li.item-level-3 > a.devart-support-active-submenu[href*="option=com_devartsupport"],
+.sidebar-wrapper .main-nav li.item-level-3 > a.mm-active[href*="option=com_devartsupport"],
+.sidebar-wrapper .main-nav li li a.mm-active.no-dropdown[href*="option=com_devartsupport"] {
+    background-color: hsl(0deg 87.73% 55.33%) !important;
+    color: #fff !important;
+}
+
+.main-nav li li a.mm-active.no-dropdown[href*="option=com_devartsupport"]:hover,
+.main-nav li li a.mm-active.no-dropdown[href*="option=com_devartsupport"]:focus,
+.main-nav li.item-level-3 > a.mm-active[href*="option=com_devartsupport"]:hover,
+.main-nav li.item-level-3 > a.mm-active[href*="option=com_devartsupport"]:focus,
+.main-nav li.item-level-3 > a.devart-support-active-submenu[href*="option=com_devartsupport"]:hover,
+.main-nav li.item-level-3 > a.devart-support-active-submenu[href*="option=com_devartsupport"]:focus,
+.sidebar-wrapper .main-nav li.item-level-3 > a.mm-active[href*="option=com_devartsupport"]:hover,
+.sidebar-wrapper .main-nav li.item-level-3 > a.mm-active[href*="option=com_devartsupport"]:focus {
+    background-color: hsl(0deg 87.73% 50%) !important;
+    color: #fff !important;
+}
+
+.main-nav li.item-level-3 > a.mm-active[href*="option=com_devartsupport"] .sidebar-item-title,
+.main-nav li.item-level-3 > a.devart-support-active-submenu[href*="option=com_devartsupport"] .sidebar-item-title,
+.main-nav li li a.mm-active.no-dropdown[href*="option=com_devartsupport"] .sidebar-item-title {
+    color: #fff !important;
+}
+
+/* Parent stays transparent (no red), but keep Atum sidebar text color — do not force inherit. */
+.main-nav li.item-level-2 > a[href*="option=com_devartsupport"],
+.main-nav li.item-level-2 > a.mm-active[href*="option=com_devartsupport"],
+.main-nav li li > a.has-arrow[href*="option=com_devartsupport"] {
+    background-color: transparent !important;
+    background-image: none !important;
+}

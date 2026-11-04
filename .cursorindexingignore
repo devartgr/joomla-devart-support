@@ -1,0 +1,9 @@
+/builds/
+/releases/
+/archive/
+/tmp/
+/temp/
+/vendor/
+/node_modules/
+*.zip
+*.log

@@ -1,0 +1,43 @@
+# Generated installable packages
+/builds/
+/releases/
+/archive/
+
+# Never inspect packaged archives as source code
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Temporary build directories
+/tmp/
+/temp/
+/.cache/
+/build-tmp/
+/dist/
+
+# Local system files
+.DS_Store
+Thumbs.db
+
+# Logs and generated reports
+*.log
+*.tmp
+*.cache
+
+# IDE metadata not relevant to the agent
+.idea/
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# External dependencies if ever introduced
+/vendor/
+/node_modules/

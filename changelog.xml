@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelogs>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <version>1.0.41</version>
+        <addition>
+            <item>Portal attachments with configurable allowed types and frontend enable switch</item>
+            <item>Action Log plugin plg_actionlog_devartsupport</item>
+        </addition>
+        <change>
+            <item>Full language pass for site portal and Action Log across 15 locales</item>
+        </change>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.38 / 1.0.40</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <version>1.0.38</version>
+        <addition>
+            <item>Portal owners can set priority on create and ticket view</item>
+            <item>Portal close and reopen actions for the ticket owner</item>
+        </addition>
+        <change>
+            <item>Removed Pending status; tickets are Open or Closed only (legacy pending rows migrate to open)</item>
+        </change>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.36 / 1.0.37</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <version>1.0.36</version>
+        <fix>
+            <item>Portal tickets table uses soft row separators instead of a heavy outer frame</item>
+            <item>Media asset version bumped so browsers pick up the new site.css</item>
+        </fix>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.34</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <version>1.0.34</version>
+        <fix>
+            <item>Portal guest redirect seeds com_users login form return via user state (no encoding API in extension source)</item>
+        </fix>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.32</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <version>1.0.32</version>
+        <fix>
+            <item>Package update server and changelog URLs for GitHub releases (joomla-devart-support)</item>
+            <item>Privacy plugin extends the Joomla 6 PrivacyPlugin FQCN</item>
+            <item>Attachment path/name checks renamed and filename sanitising avoids hex-escape scanner false positives</item>
+        </fix>
+        <note>
+            <item>Requires Joomla 6.0+ and PHP 8.3.0+</item>
+            <item>Safe update from DevArt Support 1.0.31</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>pkg_devartsupport</element>
+        <type>package</type>
+        <version>1.0.31</version>
+        <addition>
+            <item>Load older messages for long ticket threads (admin and portal)</item>
+            <item>Optional author-copy email when someone posts a reply</item>
+        </addition>
+        <change>
+            <item>Removed redundant Portal badge from the administrator tickets list</item>
+        </change>
+    </changelog>
+</changelogs>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details" label="COM_DEVARTSUPPORT_CATEGORY">
+        <field name="id" type="hidden" default="0" />
+        <field
+            name="title"
+            type="text"
+            label="COM_DEVARTSUPPORT_FIELD_TITLE"
+            description="COM_DEVARTSUPPORT_FIELD_TITLE_DESC"
+            required="true"
+            maxlength="255"
+            filter="string"
+        />
+        <field
+            name="published"
+            type="list"
+            label="COM_DEVARTSUPPORT_FIELD_PUBLISHED"
+            description="COM_DEVARTSUPPORT_FIELD_PUBLISHED_DESC"
+            default="1"
+            required="true"
+        >
+            <option value="1">JYES</option>
+            <option value="0">JNO</option>
+        </field>
+        <field
+            name="attachments_enabled"
+            type="list"
+            label="COM_DEVARTSUPPORT_FIELD_CATEGORY_ATTACHMENTS"
+            description="COM_DEVARTSUPPORT_FIELD_CATEGORY_ATTACHMENTS_DESC"
+            default="1"
+            required="true"
+        >
+            <option value="1">JYES</option>
+            <option value="0">JNO</option>
+        </field>
+    </fieldset>
+</form>

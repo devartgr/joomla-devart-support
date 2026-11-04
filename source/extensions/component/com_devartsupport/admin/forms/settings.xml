@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset
+        name="email"
+        label="COM_DEVARTSUPPORT_SETTINGS_EMAIL"
+        description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTE"
+    >
+        <field
+            name="email_enabled"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="0"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_ENABLED"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_ENABLED_DESC"
+            filter="integer"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="email_notify_new_ticket"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="1"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_NEW"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_NEW_DESC"
+            filter="integer"
+            showon="email_enabled:1"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="email_notify_reply"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="1"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_REPLY"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_REPLY_DESC"
+            filter="integer"
+            showon="email_enabled:1"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="email_notify_status_change"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="1"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_STATUS"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_STATUS_DESC"
+            filter="integer"
+            showon="email_enabled:1"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="email_notify_requester"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="0"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_REQUESTER"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_REQUESTER_DESC"
+            filter="integer"
+            showon="email_enabled:1"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="email_notify_author_copy"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="0"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_AUTHOR_COPY"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_NOTIFY_AUTHOR_COPY_DESC"
+            filter="integer"
+            showon="email_enabled:1"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="email_recipients"
+            type="textarea"
+            default=""
+            rows="3"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_RECIPIENTS"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_RECIPIENTS_DESC"
+            filter="string"
+            showon="email_enabled:1"
+        />
+        <field
+            name="email_bcc"
+            type="textarea"
+            default=""
+            rows="2"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_BCC"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_BCC_DESC"
+            filter="string"
+            showon="email_enabled:1"
+        />
+        <field
+            name="email_from_name"
+            type="text"
+            default=""
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_FROM_NAME"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_FROM_NAME_DESC"
+            filter="string"
+            maxlength="255"
+            showon="email_enabled:1"
+        />
+        <field
+            name="email_from_email"
+            type="email"
+            default=""
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_FROM_EMAIL"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_FROM_EMAIL_DESC"
+            filter="string"
+            maxlength="255"
+            validate="email"
+            showon="email_enabled:1"
+        />
+        <field
+            name="email_reply_to"
+            type="email"
+            default=""
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_REPLY_TO"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_REPLY_TO_DESC"
+            filter="string"
+            maxlength="255"
+            validate="email"
+            showon="email_enabled:1"
+        />
+        <field
+            name="email_mailer"
+            type="list"
+            default="global"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_MAILER"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_MAILER_DESC"
+            filter="string"
+            showon="email_enabled:1"
+        >
+            <option value="global">COM_DEVARTSUPPORT_SETTINGS_EMAIL_MAILER_GLOBAL</option>
+            <option value="smtp">COM_DEVARTSUPPORT_SETTINGS_EMAIL_MAILER_SMTP</option>
+            <option value="sendmail">COM_DEVARTSUPPORT_SETTINGS_EMAIL_MAILER_SENDMAIL</option>
+            <option value="mail">COM_DEVARTSUPPORT_SETTINGS_EMAIL_MAILER_PHP</option>
+        </field>
+        <field
+            name="email_sendmail_path"
+            type="text"
+            default="/usr/sbin/sendmail"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SENDMAIL"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SENDMAIL_DESC"
+            filter="string"
+            maxlength="255"
+            showon="email_enabled:1[AND]email_mailer:sendmail"
+        />
+        <field
+            name="email_smtp_host"
+            type="text"
+            default="localhost"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_HOST"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_HOST_DESC"
+            filter="string"
+            maxlength="255"
+            showon="email_enabled:1[AND]email_mailer:smtp"
+        />
+        <field
+            name="email_smtp_port"
+            type="number"
+            default="587"
+            min="1"
+            max="65535"
+            step="1"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_PORT"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_PORT_DESC"
+            filter="integer"
+            showon="email_enabled:1[AND]email_mailer:smtp"
+        />
+        <field
+            name="email_smtp_secure"
+            type="list"
+            default="tls"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_SECURE"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_SECURE_DESC"
+            filter="string"
+            showon="email_enabled:1[AND]email_mailer:smtp"
+        >
+            <option value="none">COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_SECURE_NONE</option>
+            <option value="ssl">COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_SECURE_SSL</option>
+            <option value="tls">COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_SECURE_TLS</option>
+        </field>
+        <field
+            name="email_smtp_auth"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="1"
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_AUTH"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_AUTH_DESC"
+            filter="integer"
+            showon="email_enabled:1[AND]email_mailer:smtp"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="email_smtp_user"
+            type="text"
+            default=""
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_USER"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_USER_DESC"
+            filter="string"
+            maxlength="255"
+            showon="email_enabled:1[AND]email_mailer:smtp"
+        />
+        <field
+            name="email_smtp_pass"
+            type="password"
+            default=""
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_PASS"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_SMTP_PASS_DESC"
+            filter="raw"
+            maxlength="255"
+            autocomplete="new-password"
+            showon="email_enabled:1[AND]email_mailer:smtp"
+        />
+        <field
+            name="email_test_recipient"
+            type="email"
+            default=""
+            label="COM_DEVARTSUPPORT_SETTINGS_EMAIL_TEST_TO"
+            description="COM_DEVARTSUPPORT_SETTINGS_EMAIL_TEST_TO_DESC"
+            filter="string"
+            maxlength="255"
+            validate="email"
+            showon="email_enabled:1"
+        />
+    </fieldset>
+</form>

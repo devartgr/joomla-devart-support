@@ -1,0 +1,292 @@
+<?php
+/**
+ * @package     DevArt Support
+ * @subpackage  com_devartsupport
+ *
+ * @copyright   Copyright (C) 2026 Stathopoulos Kostas - DevArt. All rights reserved.
+ * @license     GNU General Public License version 3 or later; see LICENSE.txt
+ */
+
+declare(strict_types=1);
+
+namespace Devart\Component\Devartsupport\Administrator\Service;
+
+defined('_JEXEC') or die;
+
+use Devart\Component\Devartsupport\Administrator\Helper\EmailSettings;
+use Devart\Component\Devartsupport\Site\Helper\PortalRoute;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Mail\MailerFactoryInterface;
+use Joomla\CMS\Mail\MailHelper;
+
+/**
+ * Staff notification emails for ticket events.
+ * Failures never abort ticket create/update/status changes.
+ */
+final class TicketMailService
+{
+    public function notifyNewTicket(object $ticket, string $messageBody): void
+    {
+        if (!EmailSettings::notifyNewTicket()) {
+            return;
+        }
+
+        $this->ensureLanguage();
+        $this->sendStaff(
+            Text::sprintf('COM_DEVARTSUPPORT_MAIL_NEW_SUBJECT', (int) $ticket->id, (string) $ticket->subject),
+            $this->mailText(
+                'COM_DEVARTSUPPORT_MAIL_NEW_BODY',
+                (int) $ticket->id,
+                (string) $ticket->subject,
+                (string) $ticket->status,
+                (string) $ticket->priority,
+                (string) $ticket->requester_name,
+                (string) $ticket->requester_email,
+                $this->plainBody($messageBody)
+            )
+        );
+    }
+
+    public function notifyReply(object $ticket, string $replyBody): void
+    {
+        if (!EmailSettings::notifyReply()) {
+            return;
+        }
+
+        // Language must load before Text::sprintf — portal replies run in site context.
+        $this->ensureLanguage();
+        $this->sendStaff(
+            Text::sprintf('COM_DEVARTSUPPORT_MAIL_REPLY_SUBJECT', (int) $ticket->id, (string) $ticket->subject),
+            $this->mailText(
+                'COM_DEVARTSUPPORT_MAIL_REPLY_BODY',
+                (int) $ticket->id,
+                (string) $ticket->subject,
+                (string) $ticket->status,
+                $this->plainBody($replyBody)
+            )
+        );
+    }
+
+    public function notifyStatusChange(object $ticket, string $previousStatus, string $newStatus): void
+    {
+        if (!EmailSettings::notifyStatusChange() || $previousStatus === $newStatus) {
+            return;
+        }
+
+        $this->ensureLanguage();
+        $this->sendStaff(
+            Text::sprintf('COM_DEVARTSUPPORT_MAIL_STATUS_SUBJECT', (int) $ticket->id, (string) $ticket->subject),
+            $this->mailText(
+                'COM_DEVARTSUPPORT_MAIL_STATUS_BODY',
+                (int) $ticket->id,
+                (string) $ticket->subject,
+                $previousStatus,
+                $newStatus
+            )
+        );
+    }
+
+    /**
+     * Notify the ticket requester that staff replied. Never includes the reply body.
+     */
+    public function notifyRequesterReply(object $ticket): void
+    {
+        if (!EmailSettings::notifyRequester()) {
+            return;
+        }
+
+        $to = strtolower(trim((string) ($ticket->requester_email ?? '')));
+
+        if ($to === '' || !MailHelper::isEmailAddress($to)) {
+            return;
+        }
+
+        $this->ensureLanguage();
+        $portalUrl = PortalRoute::absoluteTicket((int) $ticket->id);
+
+        try {
+            $this->dispatch(
+                [$to],
+                [],
+                Text::sprintf(
+                    'COM_DEVARTSUPPORT_MAIL_REQUESTER_SUBJECT',
+                    (int) $ticket->id,
+                    (string) $ticket->subject
+                ),
+                $this->mailText(
+                    'COM_DEVARTSUPPORT_MAIL_REQUESTER_BODY',
+                    (int) $ticket->id,
+                    (string) $ticket->subject,
+                    $portalUrl
+                )
+            );
+        } catch (\Throwable $error) {
+            $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
+        }
+    }
+
+    /**
+     * Send the message author a copy of what they posted on the ticket.
+     */
+    public function notifyAuthorCopy(object $ticket, string $messageBody, string $authorEmail): void
+    {
+        if (!EmailSettings::notifyAuthorCopy()) {
+            return;
+        }
+
+        $to = strtolower(trim($authorEmail));
+
+        if ($to === '' || !MailHelper::isEmailAddress($to)) {
+            return;
+        }
+
+        $this->ensureLanguage();
+        $portalUrl = PortalRoute::absoluteTicket((int) $ticket->id);
+
+        try {
+            $this->dispatch(
+                [$to],
+                [],
+                Text::sprintf(
+                    'COM_DEVARTSUPPORT_MAIL_AUTHOR_COPY_SUBJECT',
+                    (int) $ticket->id,
+                    (string) $ticket->subject
+                ),
+                $this->mailText(
+                    'COM_DEVARTSUPPORT_MAIL_AUTHOR_COPY_BODY',
+                    (int) $ticket->id,
+                    (string) $ticket->subject,
+                    $this->plainBody($messageBody),
+                    $portalUrl
+                )
+            );
+        } catch (\Throwable $error) {
+            $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
+        }
+    }
+
+    public function sendTest(string $to): void
+    {
+        if (!EmailSettings::enabled()) {
+            throw new \RuntimeException(Text::_('COM_DEVARTSUPPORT_MAIL_TEST_DISABLED'));
+        }
+
+        $to = strtolower(trim($to));
+
+        if ($to === '' || !MailHelper::isEmailAddress($to)) {
+            throw new \RuntimeException(Text::_('COM_DEVARTSUPPORT_MAIL_TEST_INVALID'));
+        }
+
+        $this->ensureLanguage();
+        $this->dispatch(
+            [$to],
+            [],
+            Text::_('COM_DEVARTSUPPORT_MAIL_TEST_SUBJECT'),
+            Text::_('COM_DEVARTSUPPORT_MAIL_TEST_BODY')
+        );
+    }
+
+    private function mailText(string $key, mixed ...$args): string
+    {
+        return str_replace('\\n', "\n", Text::sprintf($key, ...$args));
+    }
+
+    private function sendStaff(string $subject, string $body): void
+    {
+        $recipients = EmailSettings::recipients();
+
+        if ($recipients === []) {
+            $this->warn(Text::_('COM_DEVARTSUPPORT_MAIL_NO_RECIPIENTS'));
+
+            return;
+        }
+
+        try {
+            $this->dispatch($recipients, EmailSettings::bcc(), $subject, $body);
+        } catch (\Throwable $error) {
+            $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
+        }
+    }
+
+    /**
+     * @param list<string> $recipients
+     * @param list<string> $bcc
+     */
+    private function dispatch(array $recipients, array $bcc, string $subject, string $body): void
+    {
+        if (!Factory::getApplication()->get('mailonline', 1)) {
+            throw new \RuntimeException(Text::_('COM_DEVARTSUPPORT_MAIL_SITE_OFFLINE'));
+        }
+
+        $mailer = Factory::getContainer()
+            ->get(MailerFactoryInterface::class)
+            ->createMailer(EmailSettings::mailerRegistry());
+
+        $fromEmail = EmailSettings::fromEmail();
+        $fromName = EmailSettings::fromName();
+        $siteMail = trim((string) Factory::getApplication()->get('mailfrom'));
+        $siteName = trim((string) Factory::getApplication()->get('fromname'));
+
+        if ($fromEmail !== '' && MailHelper::isEmailAddress($fromEmail)) {
+            $mailer->setSender($fromEmail, $fromName !== '' ? $fromName : $fromEmail);
+        } elseif ($siteMail !== '' && MailHelper::isEmailAddress($siteMail)) {
+            $mailer->setSender($siteMail, $fromName !== '' ? $fromName : $siteName);
+        }
+
+        $replyTo = EmailSettings::replyTo();
+
+        if ($replyTo !== '' && MailHelper::isEmailAddress($replyTo)) {
+            $mailer->addReplyTo($replyTo, $fromName !== '' ? $fromName : $siteName);
+        }
+
+        foreach ($recipients as $email) {
+            $mailer->addRecipient($email);
+        }
+
+        foreach ($bcc as $email) {
+            if (!in_array($email, $recipients, true)) {
+                $mailer->addBcc($email);
+            }
+        }
+
+        $mailer->setSubject($this->oneLine($subject));
+        $mailer->setBody($body);
+        $mailer->send();
+    }
+
+    private function warn(string $message): void
+    {
+        try {
+            Factory::getApplication()->enqueueMessage($message, 'warning');
+        } catch (\Throwable) {
+            // Never block the ticket workflow.
+        }
+    }
+
+    private function plainBody(string $body): string
+    {
+        $body = trim(strip_tags($body));
+        $body = str_replace(["\r\n", "\r"], "\n", $body);
+
+        return $body !== '' ? $body : '-';
+    }
+
+    private function oneLine(string $value): string
+    {
+        return trim(str_replace(["\r", "\n"], ' ', $value));
+    }
+
+    private function ensureLanguage(): void
+    {
+        try {
+            $language = Factory::getApplication()->getLanguage();
+            $path = JPATH_ADMINISTRATOR . '/components/com_devartsupport';
+            // Reload so portal (site) requests pick up administrator .ini strings.
+            $language->load('com_devartsupport', $path, $language->getTag(), true, false);
+            $language->load('com_devartsupport', $path, 'en-GB', false, true);
+        } catch (\Throwable) {
+            // Fall back to already loaded keys.
+        }
+    }
+}

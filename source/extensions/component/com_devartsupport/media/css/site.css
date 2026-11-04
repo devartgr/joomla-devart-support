@@ -1,0 +1,239 @@
+.com-devartsupport-portal {
+    max-width: 56rem;
+    --devart-support-accent: #2d6a4f;
+    --devart-support-accent-contrast: #ffffff;
+    --devart-support-btn-bg: var(--devart-support-accent);
+    --devart-support-btn-color: var(--devart-support-accent-contrast);
+    --devart-support-link: var(--devart-support-accent);
+    --devart-support-status-open-bg: #d1e7dd;
+    --devart-support-status-open-color: #0f5132;
+    --devart-support-staff-msg-bg: var(--devart-support-status-open-bg);
+    --devart-support-staff-msg-border: var(--devart-support-accent);
+}
+
+.com-devartsupport-portal.devart-support-theme-red {
+    --devart-support-accent: #c1121f;
+    --devart-support-status-open-bg: #f8d7da;
+    --devart-support-status-open-color: #842029;
+}
+
+.com-devartsupport-portal.devart-support-theme-orange {
+    --devart-support-accent: #e85d04;
+    --devart-support-status-open-bg: #ffe5d0;
+    --devart-support-status-open-color: #9a3412;
+}
+
+.com-devartsupport-portal.devart-support-theme-blue {
+    --devart-support-accent: #1d4ed8;
+    --devart-support-status-open-bg: #dbeafe;
+    --devart-support-status-open-color: #1e3a8a;
+}
+
+.com-devartsupport-portal.devart-support-theme-green {
+    --devart-support-accent: #2d6a4f;
+    --devart-support-status-open-bg: #d1e7dd;
+    --devart-support-status-open-color: #0f5132;
+}
+
+.com-devartsupport-portal.devart-support-theme-yellow {
+    --devart-support-accent: #ca8a04;
+    --devart-support-accent-contrast: #111111;
+    --devart-support-status-open-bg: #fef3c7;
+    --devart-support-status-open-color: #854d0e;
+}
+
+.com-devartsupport-portal.devart-support-theme-gray {
+    --devart-support-accent: #4b5563;
+    --devart-support-status-open-bg: #e5e7eb;
+    --devart-support-status-open-color: #1f2937;
+}
+
+.com-devartsupport-portal.devart-support-theme-dark {
+    --devart-support-accent: #111827;
+    --devart-support-status-open-bg: #e5e7eb;
+    --devart-support-status-open-color: #111827;
+}
+
+.com-devartsupport-portal a {
+    color: var(--devart-support-link);
+}
+
+.com-devartsupport-portal .btn-primary {
+    background-color: var(--devart-support-btn-bg);
+    border-color: var(--devart-support-btn-bg);
+    color: var(--devart-support-btn-color);
+}
+
+.com-devartsupport-portal .btn-primary:hover,
+.com-devartsupport-portal .btn-primary:focus {
+    filter: brightness(0.92);
+    background-color: var(--devart-support-btn-bg);
+    border-color: var(--devart-support-btn-bg);
+    color: var(--devart-support-btn-color);
+}
+
+.devart-support-portal-head {
+    margin-bottom: 1.25rem;
+}
+
+.devart-support-portal-intro,
+.devart-support-portal-meta {
+    margin-top: 0.35rem;
+    color: var(--body-color);
+    opacity: 0.85;
+}
+
+.devart-support-portal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.devart-support-portal-message {
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 0.35rem;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+    background: var(--body-bg, #fff);
+}
+
+.devart-support-portal-message--staff {
+    background: var(--devart-support-staff-msg-bg);
+    border-color: color-mix(in srgb, var(--devart-support-staff-msg-border) 45%, var(--border-color, #dee2e6));
+}
+
+.devart-support-portal-staff-label {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--devart-support-status-open-color);
+    background: color-mix(in srgb, var(--devart-support-accent) 18%, #fff);
+}
+
+.devart-support-portal-message header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Soft list table: no heavy outer frame; light row separators only. */
+.com-devartsupport-portal .table-responsive {
+    border: 0;
+    box-shadow: none;
+}
+
+.com-devartsupport-portal .devart-support-portal-table {
+    --bs-table-border-color: color-mix(in srgb, var(--border-color, #dee2e6) 65%, transparent);
+    --bs-table-striped-bg: color-mix(in srgb, var(--devart-support-accent) 5%, transparent);
+    --bs-table-hover-bg: color-mix(in srgb, var(--devart-support-accent) 8%, transparent);
+    width: 100%;
+    margin-bottom: 0;
+    border: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    vertical-align: middle;
+}
+
+.com-devartsupport-portal .devart-support-portal-table > :not(caption) > * > * {
+    border-width: 0;
+    border-bottom: 1px solid var(--bs-table-border-color);
+    box-shadow: none;
+}
+
+.com-devartsupport-portal .devart-support-portal-table thead th {
+    border-bottom: 2px solid color-mix(in srgb, var(--devart-support-accent) 28%, var(--border-color, #dee2e6));
+    background: transparent;
+    font-weight: 600;
+    padding-block: 0.65rem;
+    color: inherit;
+}
+
+.com-devartsupport-portal .devart-support-portal-table tbody td {
+    padding-block: 0.75rem;
+    vertical-align: middle;
+}
+
+.com-devartsupport-portal .devart-support-portal-table tbody tr:last-child > * {
+    border-bottom-color: transparent;
+}
+
+.com-devartsupport-portal .devart-support-portal-col-status,
+.com-devartsupport-portal .devart-support-portal-col-priority,
+.com-devartsupport-portal .devart-support-portal-col-category {
+    width: 12%;
+}
+
+.com-devartsupport-portal .devart-support-portal-col-last {
+    width: 16%;
+}
+
+@media (max-width: 767.98px) {
+    .com-devartsupport-portal .devart-support-portal-col-status,
+    .com-devartsupport-portal .devart-support-portal-col-priority,
+    .com-devartsupport-portal .devart-support-portal-col-category,
+    .com-devartsupport-portal .devart-support-portal-col-last {
+        width: auto;
+    }
+}
+
+.devart-support-portal-priority {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #41464b;
+    background: #e9ecef;
+}
+
+.devart-support-portal-priority--low {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.devart-support-portal-priority--normal {
+    background: #dbeafe;
+    color: #1e3a8a;
+}
+
+.devart-support-portal-priority--high {
+    background: #ffe5d0;
+    color: #9a3412;
+}
+
+.devart-support-portal-priority--urgent {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.devart-support-portal-manage .form-label {
+    margin-bottom: 0.35rem;
+}
+
+.devart-support-portal-status {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #111;
+    background: #e9ecef;
+}
+
+.devart-support-portal-status--open {
+    background: var(--devart-support-status-open-bg);
+    color: var(--devart-support-status-open-color);
+}
+
+.devart-support-portal-status--closed {
+    background: #e2e3e5;
+    color: #41464b;
+}

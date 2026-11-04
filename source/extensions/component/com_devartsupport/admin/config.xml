@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <fieldset
+        name="attachments"
+        label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS"
+    >
+        <field
+            name="attachments_enabled"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="1"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_ENABLED"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_ENABLED_DESC"
+            filter="integer"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="attachments_max_filesize"
+            type="number"
+            default="8"
+            min="1"
+            max="64"
+            step="1"
+            filter="integer"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_MAX_FILESIZE"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_MAX_FILESIZE_DESC"
+        />
+        <field
+            name="attachments_max_files"
+            type="number"
+            default="5"
+            min="1"
+            max="20"
+            step="1"
+            filter="integer"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_MAX_FILES"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_MAX_FILES_DESC"
+        />
+        <field
+            name="attachments_allowed_extensions"
+            type="list"
+            multiple="true"
+            layout="joomla.form.field.list-fancy-select"
+            default="csv,doc,docx,gif,jpeg,jpg,pdf,png,txt,webp,xls,xlsx,zip"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_TYPES"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_TYPES_DESC"
+            filter="cmd"
+        >
+            <option value="csv">csv</option>
+            <option value="doc">doc</option>
+            <option value="docx">docx</option>
+            <option value="gif">gif</option>
+            <option value="jpeg">jpeg</option>
+            <option value="jpg">jpg</option>
+            <option value="pdf">pdf</option>
+            <option value="png">png</option>
+            <option value="txt">txt</option>
+            <option value="webp">webp</option>
+            <option value="xls">xls</option>
+            <option value="xlsx">xlsx</option>
+            <option value="zip">zip</option>
+        </field>
+        <field
+            name="attachments_frontend_enabled"
+            type="radio"
+            layout="joomla.form.field.radio.switcher"
+            default="1"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_FRONTEND"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_FRONTEND_DESC"
+            filter="integer"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+        <field
+            name="attachments_storage_note"
+            type="note"
+            label="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_STORAGE"
+            description="COM_DEVARTSUPPORT_CONFIG_ATTACHMENTS_STORAGE_DESC"
+        />
+    </fieldset>
+    <fieldset
+        name="frontend"
+        label="COM_DEVARTSUPPORT_CONFIG_FRONTEND"
+    >
+        <field
+            name="front_theme"
+            type="list"
+            default="green"
+            label="COM_DEVARTSUPPORT_CONFIG_FRONT_THEME"
+            description="COM_DEVARTSUPPORT_CONFIG_FRONT_THEME_DESC"
+            filter="cmd"
+        >
+            <option value="red">COM_DEVARTSUPPORT_THEME_RED</option>
+            <option value="orange">COM_DEVARTSUPPORT_THEME_ORANGE</option>
+            <option value="blue">COM_DEVARTSUPPORT_THEME_BLUE</option>
+            <option value="green">COM_DEVARTSUPPORT_THEME_GREEN</option>
+            <option value="yellow">COM_DEVARTSUPPORT_THEME_YELLOW</option>
+            <option value="gray">COM_DEVARTSUPPORT_THEME_GRAY</option>
+            <option value="dark">COM_DEVARTSUPPORT_THEME_DARK</option>
+        </field>
+        <field
+            name="front_date_format"
+            type="list"
+            default="DATE_FORMAT_LC2"
+            label="COM_DEVARTSUPPORT_CONFIG_FRONT_DATE_FORMAT"
+            description="COM_DEVARTSUPPORT_CONFIG_FRONT_DATE_FORMAT_DESC"
+            filter="string"
+        >
+            <option value="DATE_FORMAT_LC2">COM_DEVARTSUPPORT_DATE_FORMAT_LC2</option>
+            <option value="DATE_FORMAT_LC4">COM_DEVARTSUPPORT_DATE_FORMAT_LC4</option>
+            <option value="d/m/Y H:i">COM_DEVARTSUPPORT_DATE_FORMAT_DMY_HI</option>
+            <option value="Y-m-d H:i">COM_DEVARTSUPPORT_DATE_FORMAT_YMD_HI</option>
+            <option value="d.m.Y H:i">COM_DEVARTSUPPORT_DATE_FORMAT_DOT_HI</option>
+        </field>
+    </fieldset>
+    <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL">
+        <field
+            name="rules"
+            type="rules"
+            label="JCONFIG_PERMISSIONS_LABEL"
+            filter="rules"
+            component="com_devartsupport"
+            section="component"
+        />
+    </fieldset>
+</config>
