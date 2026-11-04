@@ -56,7 +56,7 @@ Confirmed from repository source only:
 - Optional author-copy email of a portal user’s own reply (not staff admin replies)
 - Configurable portal create/reply hourly rate limits (Options → Frontend)
 - Admin stale-form guard (`expected_modified`) and portal status-safe reopen on reply
-- Outbound mail queue (`#__devartsupport_mail_queue`) + Scheduler `devartsupport.send_mail`
+- Mail delivery Options: Immediate (default) or Queued (`#__devartsupport_mail_queue` + Scheduler `devartsupport.send_mail`)
 - Tools attachment storage health without exposing absolute paths
 - Joomla Privacy plugin export/remove for tickets, messages and attachments (`user_id` / `requester_email`)
 - Action Log plugin for ticket and attachment mutations (admin + portal)

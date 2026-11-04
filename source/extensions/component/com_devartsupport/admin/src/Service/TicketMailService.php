@@ -14,6 +14,7 @@ namespace Devart\Component\Devartsupport\Administrator\Service;
 defined('_JEXEC') or die;
 
 use Devart\Component\Devartsupport\Administrator\Helper\EmailSettings;
+use Devart\Component\Devartsupport\Administrator\Helper\MailQueueSettings;
 use Devart\Component\Devartsupport\Administrator\Service\Storage\MailQueueStorage;
 use Devart\Component\Devartsupport\Site\Helper\PortalRoute;
 use Joomla\CMS\Factory;
@@ -23,7 +24,8 @@ use Joomla\CMS\Mail\MailHelper;
 use Joomla\CMS\User\UserFactoryInterface;
 
 /**
- * Ticket notification emails. Notifications are queued; test mail sends immediately.
+ * Ticket notification emails. Delivery is immediate by default, or queued when
+ * Options → Mail delivery is set to queued. Test mail always sends immediately.
  * Failures never abort ticket create/update/status changes.
  */
 final class TicketMailService
@@ -168,7 +170,7 @@ final class TicketMailService
             return;
         }
 
-        $this->enqueue([$to], [], $subject, $body, (int) ($ticket->id ?? 0), $kind);
+        $this->dispatchOutbound([$to], [], $subject, $body, (int) ($ticket->id ?? 0), $kind);
     }
 
     /**
@@ -213,7 +215,7 @@ final class TicketMailService
         $this->ensureLanguage();
         $portalUrl = PortalRoute::absoluteTicket((int) $ticket->id);
 
-        $this->enqueue(
+        $this->dispatchOutbound(
             [$to],
             [],
             Text::sprintf(
@@ -321,14 +323,14 @@ final class TicketMailService
             return;
         }
 
-        $this->enqueue($recipients, EmailSettings::bcc(), $subject, $body, $ticketId, $kind);
+        $this->dispatchOutbound($recipients, EmailSettings::bcc(), $subject, $body, $ticketId, $kind);
     }
 
     /**
      * @param list<string> $recipients
      * @param list<string> $bcc
      */
-    private function enqueue(
+    private function dispatchOutbound(
         array $recipients,
         array $bcc,
         string $subject,
@@ -341,7 +343,13 @@ final class TicketMailService
         }
 
         try {
-            $this->queue->enqueue($recipients, $bcc, $subject, $body, $ticketId, $kind);
+            if (MailQueueSettings::useQueue()) {
+                $this->queue->enqueue($recipients, $bcc, $subject, $body, $ticketId, $kind);
+
+                return;
+            }
+
+            $this->sendNow($recipients, $bcc, $subject, $body);
         } catch (\Throwable $error) {
             $this->warn(Text::sprintf('COM_DEVARTSUPPORT_MAIL_SEND_FAILED_DETAIL', $error->getMessage()));
         }

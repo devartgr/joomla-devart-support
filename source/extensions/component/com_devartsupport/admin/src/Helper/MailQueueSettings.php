@@ -17,6 +17,9 @@ use Joomla\CMS\Component\ComponentHelper;
 
 final class MailQueueSettings
 {
+    public const MODE_IMMEDIATE = 'immediate';
+    public const MODE_QUEUED = 'queued';
+
     public const DEFAULT_BATCH = 20;
     public const MIN_BATCH = 1;
     public const MAX_BATCH = 100;
@@ -24,6 +27,21 @@ final class MailQueueSettings
     public const MIN_MAX_ATTEMPTS = 1;
     public const MAX_MAX_ATTEMPTS = 10;
     public const SENT_RETENTION_DAYS = 7;
+
+    public static function deliveryMode(): string
+    {
+        $mode = strtolower(trim((string) ComponentHelper::getParams('com_devartsupport')->get(
+            'mail_delivery',
+            self::MODE_IMMEDIATE
+        )));
+
+        return $mode === self::MODE_QUEUED ? self::MODE_QUEUED : self::MODE_IMMEDIATE;
+    }
+
+    public static function useQueue(): bool
+    {
+        return self::deliveryMode() === self::MODE_QUEUED;
+    }
 
     public static function batchSize(): int
     {

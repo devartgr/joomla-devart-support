@@ -118,9 +118,20 @@
         />
     </fieldset>
     <fieldset
-        name="mail_queue"
-        label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE"
+        name="mail_delivery"
+        label="COM_DEVARTSUPPORT_CONFIG_MAIL_DELIVERY"
     >
+        <field
+            name="mail_delivery"
+            type="list"
+            default="immediate"
+            filter="cmd"
+            label="COM_DEVARTSUPPORT_CONFIG_MAIL_DELIVERY_MODE"
+            description="COM_DEVARTSUPPORT_CONFIG_MAIL_DELIVERY_MODE_DESC"
+        >
+            <option value="immediate">COM_DEVARTSUPPORT_CONFIG_MAIL_DELIVERY_IMMEDIATE</option>
+            <option value="queued">COM_DEVARTSUPPORT_CONFIG_MAIL_DELIVERY_QUEUED</option>
+        </field>
         <field
             name="mail_queue_batch"
             type="number"
@@ -131,6 +142,7 @@
             filter="integer"
             label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_BATCH"
             description="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_BATCH_DESC"
+            showon="mail_delivery:queued"
         />
         <field
             name="mail_queue_max_attempts"
@@ -142,12 +154,14 @@
             filter="integer"
             label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_ATTEMPTS"
             description="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_ATTEMPTS_DESC"
+            showon="mail_delivery:queued"
         />
         <field
             name="mail_queue_note"
             type="note"
             label="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_NOTE"
             description="COM_DEVARTSUPPORT_CONFIG_MAIL_QUEUE_NOTE_DESC"
+            showon="mail_delivery:queued"
         />
     </fieldset>
     <fieldset

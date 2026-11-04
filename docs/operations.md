@@ -32,15 +32,15 @@ Purge deletes private files first; database rows are removed only after the file
 
 Options → Frontend: `portal_create_hourly_cap` (default 10, range 1–100) and `portal_reply_hourly_cap` (default 30, range 1–300) per logged-in portal user per rolling hour.
 
-## Outbound mail queue
+## Mail delivery
 
-Ticket notifications (staff, requester, author-copy, status) are written to `#__devartsupport_mail_queue` and sent by the Scheduler task `devartsupport.send_mail` (seeded every 5 minutes). Ticket saves never wait on SMTP.
+Options → Mail delivery (default **Immediate**): ticket notifications send in the same request — best for most small sites.
 
-- Email Settings **test mail** still sends immediately.
-- Options → Mail queue: batch size (default 20) and max attempts (default 5).
-- Sent rows older than 7 days are purged by the same task.
-- Tools shows the current pending count.
-- Hosts must run Joomla Scheduled Tasks / cron often enough for timely delivery.
+**Queued** mode writes notifications to `#__devartsupport_mail_queue` and the Scheduler task `devartsupport.send_mail` (seeded every 5 minutes) delivers them — better under heavy concurrent traffic or tight SMTP quotas. Ticket saves still never fail because of SMTP errors (fail-soft).
+
+- Email Settings **test mail** always sends immediately.
+- When Queued: Options show batch size (default 20) and max attempts (default 5); sent rows older than 7 days are purged by the task; Tools shows pending count.
+- Queued mode needs frequent Scheduled Tasks / cron.
 
 ## Uninstall SQL
 
