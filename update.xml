@@ -11,7 +11,7 @@
         <downloads>
             <downloadurl type="full" format="zip">https://github.com/devartgr/joomla-devart-support/releases/download/v1.0.0/pkg_devartsupport_v1.0.0.zip</downloadurl>
         </downloads>
-        <sha256></sha256>
+        <sha256>9abde708241249555311a6646286c42336384559e985f72dd7eaf99ea3056aed</sha256>
         <tags><tag>stable</tag></tags>
         <changelogurl>https://raw.githubusercontent.com/devartgr/joomla-devart-support/main/changelog.xml</changelogurl>
         <targetplatform name="joomla" version="6.*" />
