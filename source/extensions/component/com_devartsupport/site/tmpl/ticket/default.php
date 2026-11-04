@@ -62,8 +62,8 @@ $token = HTMLHelper::_('form.token');
 
     <?php if ($this->canManage) : ?>
         <section class="devart-support-portal-manage mb-4" aria-label="<?php echo $escape(Text::_('COM_DEVARTSUPPORT_PORTAL_MANAGE')); ?>">
-            <div class="devart-support-portal-actions">
-                <?php if ($status === 'closed') : ?>
+            <?php if ($status === 'closed') : ?>
+                <div class="devart-support-portal-actions">
                     <form
                         action="<?php echo $escape(PortalRoute::_('index.php?option=com_devartsupport&task=ticket.reopen')); ?>"
                         method="post"
@@ -75,44 +75,45 @@ $token = HTMLHelper::_('form.token');
                         </button>
                         <?php echo $token; ?>
                     </form>
-                <?php else : ?>
-                    <form
-                        action="<?php echo $escape(PortalRoute::_('index.php?option=com_devartsupport&task=ticket.close')); ?>"
-                        method="post"
-                        class="d-inline"
-                    >
-                        <input type="hidden" name="id" value="<?php echo (int) $ticket->id; ?>">
-                        <button type="submit" class="btn btn-secondary">
-                            <?php echo $escape(Text::_('COM_DEVARTSUPPORT_PORTAL_CLOSE_TICKET')); ?>
-                        </button>
-                        <?php echo $token; ?>
-                    </form>
-                <?php endif; ?>
-            </div>
-
-            <form
-                action="<?php echo $escape(PortalRoute::_('index.php?option=com_devartsupport&task=ticket.savePriority')); ?>"
-                method="post"
-                class="devart-support-portal-priority-form mt-3"
-            >
-                <input type="hidden" name="id" value="<?php echo (int) $ticket->id; ?>">
-                <label class="form-label" for="portal-priority">
-                    <?php echo $escape(Text::_('COM_DEVARTSUPPORT_FIELD_PRIORITY')); ?>
-                </label>
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <select name="priority" id="portal-priority" class="form-select w-auto">
-                        <?php foreach ($priorityLabels as $value => $label) : ?>
-                            <option value="<?php echo $escape($value); ?>"<?php echo $priority === $value ? ' selected' : ''; ?>>
-                                <?php echo $escape($label); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <button type="submit" class="btn btn-outline-secondary">
-                        <?php echo $escape(Text::_('COM_DEVARTSUPPORT_PORTAL_SAVE_PRIORITY')); ?>
-                    </button>
                 </div>
-                <?php echo $token; ?>
-            </form>
+            <?php else : ?>
+                <form
+                    action="<?php echo $escape(PortalRoute::_('index.php?option=com_devartsupport&task=ticket.savePriority')); ?>"
+                    method="post"
+                    class="devart-support-portal-priority-form"
+                >
+                    <input type="hidden" name="id" value="<?php echo (int) $ticket->id; ?>">
+                    <label class="form-label" for="portal-priority">
+                        <?php echo $escape(Text::_('COM_DEVARTSUPPORT_FIELD_PRIORITY')); ?>
+                    </label>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <select name="priority" id="portal-priority" class="form-select w-auto">
+                            <?php foreach ($priorityLabels as $value => $label) : ?>
+                                <option value="<?php echo $escape($value); ?>"<?php echo $priority === $value ? ' selected' : ''; ?>>
+                                    <?php echo $escape($label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <?php echo $escape(Text::_('COM_DEVARTSUPPORT_PORTAL_SAVE_PRIORITY')); ?>
+                        </button>
+                    </div>
+                    <?php echo $token; ?>
+                </form>
+
+                <form
+                    action="<?php echo $escape(PortalRoute::_('index.php?option=com_devartsupport&task=ticket.close')); ?>"
+                    method="post"
+                    class="devart-support-portal-close-form"
+                    onsubmit="return window.confirm(<?php echo htmlspecialchars(json_encode(Text::_('COM_DEVARTSUPPORT_PORTAL_CLOSE_CONFIRM'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>);"
+                >
+                    <input type="hidden" name="id" value="<?php echo (int) $ticket->id; ?>">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary devart-support-portal-close">
+                        <?php echo $escape(Text::_('COM_DEVARTSUPPORT_PORTAL_CLOSE_TICKET')); ?>
+                    </button>
+                    <?php echo $token; ?>
+                </form>
+            <?php endif; ?>
         </section>
     <?php endif; ?>
 

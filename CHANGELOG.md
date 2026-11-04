@@ -33,6 +33,7 @@ section.
 - Accept additional ZIP MIME detections (`x-zip`, `octet-stream`, etc.) so valid `.zip` uploads are not rejected on some hosts.
 - Store attachments with Joomla `File::upload(..., allowUnsafe=true)` after our own validation so ZIP/RAR packages that contain `.php` are not blocked by isSafeFile content scans.
 - Portal TicketDesk resolves `PortalTicketService` even when the site Extension getter is missing or uninitialised.
+- Portal close control is quieter (outline, separated) and asks for confirmation before closing.
 - Mail queue: UTF-8-safe subject/kind/error truncation; purge failed rows older than 30 days.
 
 ## Development history (superseded numbering)

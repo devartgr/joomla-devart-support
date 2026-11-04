@@ -90,6 +90,28 @@
     margin-top: 1rem;
 }
 
+.devart-support-portal-close-form {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border-color, #dee2e6);
+}
+
+.devart-support-portal-close {
+    /* Keep close visually quiet so it is not mistaken for the primary action. */
+    background: transparent;
+    color: var(--body-color, #495057);
+    border-color: var(--border-color, #ced4da);
+    opacity: 0.9;
+}
+
+.devart-support-portal-close:hover,
+.devart-support-portal-close:focus {
+    background: transparent;
+    color: var(--body-color, #212529);
+    border-color: var(--body-color, #6c757d);
+    opacity: 1;
+}
+
 .devart-support-portal-message {
     border: 1px solid var(--border-color, #dee2e6);
     border-radius: 0.35rem;

@@ -24,6 +24,7 @@
             <item>Accept additional ZIP MIME detections for host finfo differences</item>
             <item>Allow validated ZIP/RAR uploads that contain PHP (skip Joomla isSafeFile archive scan)</item>
             <item>Portal TicketDesk fallback when site Extension portal getter is missing</item>
+            <item>Safer portal Close ticket control with confirmation prompt</item>
             <item>Mail queue UTF-8-safe truncation and failed-row purge after 30 days</item>
         </change>
         <note>
